@@ -35,14 +35,14 @@ def moment_arm(theta_rad: float, A_xy_m: Tuple[float, float],
     """Step 6: signed d = (A_x B_y - A_y B_x) / L [m]; equals dL/dtheta.
 
     Positive: cylinder extension rotates the boom counter-clockwise (up).
-    Zero in the singular pose where the cylinder line passes through O
-    (also returns 0.0 if L == 0, where the direction is undefined).
+    Zero in the singular pose where the cylinder line passes through O.
+    Raises ValueError if L <= 0 (pins coincide, direction undefined).
     Own derivation, see [[Boom Moment Arm Derivation]].
     """
     bx, by = rod_eye_position(theta_rad, r_B_m, beta_rad)
     L = math.hypot(bx - A_xy_m[0], by - A_xy_m[1])
-    if L == 0.0:
-        return 0.0
+    if L <= 0.0:
+        raise ValueError(f"cylinder length L={L} m <= 0: pins A and B coincide")
     return (A_xy_m[0] * by - A_xy_m[1] * bx) / L
 
 

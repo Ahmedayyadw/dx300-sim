@@ -109,3 +109,9 @@ def test_cosine_rule_equals_vector_length():
             assert moment_arm(th, tuple(A), rB, beta) == pytest.approx(
                 rA * rB * math.sin(gamma) / L_cos, rel=1e-9, abs=1e-9
             )
+
+
+def test_zero_length_raises():
+    # A coincides with B(theta=0) = (1, 0) -> L = 0, moment arm undefined
+    with pytest.raises(ValueError):
+        moment_arm(0.0, (1.0, 0.0), 1.0, 0.0)
