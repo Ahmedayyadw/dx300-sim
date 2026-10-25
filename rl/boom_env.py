@@ -7,7 +7,7 @@ class BoomEnv(gym.Env):
     def __init__(self, w_energy=0.05):
         self.J, self.m, self.Lc, self.b = 8e4, 5000.0, 3.5, 6e5   # kg*m^2, kg, m, N*m*s/rad
         self.tau_max, self.dt, self.max_steps = 5e5, 0.05, 200    # N*m, s, steps (10 s)
-        self.th_min, self.th_max = -0.5, 1.0                      # rad, mechanical limits
+        self.th_min, self.th_max = np.radians(-47.2), np.radians(60.4)                      # rad, mechanical limits
         self.w_energy = w_energy
         self.action_space = spaces.Box(-1.0, 1.0, (1,), np.float32)
         self.observation_space = spaces.Box(-np.inf, np.inf, (3,), np.float32)
