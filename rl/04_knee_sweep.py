@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 from stable_baselines3 import SAC
 from boom_env import BoomEnv
 
-WEIGHTS = [0.0, 0.05, 0.1, 0.2, 0.3, 0.5, 2.0]
+WEIGHTS = [0.0, 0.05, 0.1, 0.2, 0.3, 0.5, 0.75, 1.0, 1.5, 2.0]
 SEEDS = [0, 1, 2]
 STEPS = 20_000
 CSV_PATH = "rl/04_knee_sweep.csv"
