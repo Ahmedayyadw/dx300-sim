@@ -11,7 +11,7 @@ import numpy as np
 from stable_baselines3 import SAC
 from boom_env import BoomEnv
 
-CANDIDATES = [0.1, 0.3, 0.5]
+CANDIDATES = [0.0, 0.1, 0.3, 0.5]
 SEEDS = [0, 1, 2]
 STEPS = 20_000
 BOOM_LENGTH_M = 6.245  # dx300_params.BOOM_LENGTH_OFFICIAL_M
