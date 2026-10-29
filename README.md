@@ -4,7 +4,7 @@ RL (SAC, stable-baselines3) controller for the Doosan DX300 excavator boom, stud
 
 ## Key result
 
-**A small energy weight (w = 0.1) cuts boom energy by 14% (127 vs 148 kJ) and also removes worst-case misses: 0% of moves over 20 cm at the boom tip vs 1.3% for w = 0, on 100 unseen scenarios, 3 seeds.**
+**A small effort penalty (w = 0.1) cuts mechanical work at the boom joint by 14% (127 vs 148 kJ) and also removes worst-case misses: 0% of moves over 20 cm at the boom tip vs 1.3% for w = 0, on 100 unseen scenarios, 3 seeds.**
 
 Results on the 100 unseen scenarios (`new100` rows of [rl/05_generalization.csv](rl/05_generalization.csv)). Mean, p95, energy and % over 20 cm are averaged over the 3 seeds; max is the worst move over all seeds.
 
