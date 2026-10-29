@@ -6,15 +6,18 @@ Resumable: a model already saved in rl/models/ is loaded instead of retrained.
 """
 import csv
 import os
+import sys
 import time
 import numpy as np
 from stable_baselines3 import SAC
 from boom_env import BoomEnv
 
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  # repo root, for dx300sim
+from dx300sim.dx300_params import BOOM_LENGTH_OFFICIAL_M as BOOM_LENGTH_M
+
 CANDIDATES = [0.0, 0.1, 0.3, 0.5]
 SEEDS = [0, 1, 2]
 STEPS = 20_000
-BOOM_LENGTH_M = 6.245  # dx300_params.BOOM_LENGTH_OFFICIAL_M
 MODEL_DIR = "rl/models"
 CSV_PATH = "rl/05_generalization.csv"
 
