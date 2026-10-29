@@ -4,9 +4,12 @@ import gymnasium as gym
 from gymnasium import spaces
 
 class BoomEnv(gym.Env):
-    def __init__(self, w_energy=0.05):
+    def __init__(self, w_energy=0.05, m=None, J=None, tau_max_fn=None):
         self.J, self.m, self.Lc, self.b = 8e4, 5000.0, 3.5, 6e5   # kg*m^2, kg, m, N*m*s/rad
         self.tau_max, self.dt, self.max_steps = 5e5, 0.05, 200    # N*m, s, steps (10 s)
+        if m is not None: self.m = m                              # optional overrides, defaults unchanged
+        if J is not None: self.J = J
+        self.tau_max_fn = tau_max_fn                              # theta [rad] -> torque limit [N*m]
         self.th_min, self.th_max = np.radians(-47.2), np.radians(60.4)                      # rad, mechanical limits
         self.w_energy = w_energy
         self.action_space = spaces.Box(-1.0, 1.0, (1,), np.float32)
@@ -24,7 +27,7 @@ class BoomEnv(gym.Env):
 
     def step(self, action):
         u = float(np.clip(action[0], -1, 1))
-        tau = u * self.tau_max
+        tau = u * (self.tau_max if self.tau_max_fn is None else self.tau_max_fn(self.th))
         tau_g = self.m * 9.81 * self.Lc * np.cos(self.th)
         self.om += (tau - tau_g - self.b * self.om) / self.J * self.dt
         self.th += self.om * self.dt
