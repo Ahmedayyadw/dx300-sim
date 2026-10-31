@@ -4,3 +4,5 @@ rl/tb/
 *.zip
 rl/tb/
 rl/models/
+*.slxc
+slprj/
