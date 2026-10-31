@@ -9,7 +9,11 @@ RobustBoomEnv(w_energy, residual=False, randomize=True):
   reward     -(e^2 + 0.01 omega^2 + w |tau omega| / 2.5e5), mechanical power instead of u^2
   residual   u = clip(u_PID + a, -1, 1), PID = pid_ki from 07 with NOMINAL gravity feed-forward;
              PID integral frozen while u is saturated (anti-windup)
-Dynamics, end stops, energy_J and the final-error measurement are the same as BoomEnv.
+  noise      sigma_th_deg > 0 (eval only): Gaussian noise on measured theta and omega,
+             sigma_om = sigma_th / dt x 0.1 as in 06b. One measurement per step feeds both the
+             observation (e and int(e) from the noisy theta) and the residual PID.
+Dynamics, end stops, energy_J and the final-error measurement are the same as BoomEnv and use the
+true state. With sigma_th_deg = 0 the measurement is the true state.
 """
 import os
 import sys
@@ -33,21 +37,34 @@ D0_M = abs(d(0.0))   # about 0.898 m
 
 
 class RobustBoomEnv(BoomEnv):
-    def __init__(self, w_energy=0.05, residual=False, randomize=True):
+    def __init__(self, w_energy=0.05, residual=False, randomize=True, sigma_th_deg=0.0):
         super().__init__(w_energy=w_energy)
         self.residual, self.randomize = residual, randomize
         self.m_nom, self.tau_max_nom = self.m, self.tau_max
         self.u_ff_scale = self.m_nom * 9.81 * self.Lc / self.tau_max_nom   # nominal feed-forward
         self.observation_space = spaces.Box(-np.inf, np.inf, (4,), np.float32)
+        self.sigma_th = np.radians(sigma_th_deg)
+        self.sigma_om = self.sigma_th / self.dt * 0.1
+        self.noise_rng = np.random.default_rng(0)
+        self.th_meas, self.om_meas = 0.0, 0.0
+
+    def _measure(self):
+        """Sample the measured theta and omega once; _obs() and the residual PID use them."""
+        self.th_meas, self.om_meas = self.th, self.om
+        if self.sigma_th > 0:
+            self.th_meas += self.noise_rng.normal(0.0, self.sigma_th)
+            self.om_meas += self.noise_rng.normal(0.0, self.sigma_om)
 
     def _obs(self):
-        return np.array([self.th, self.om, self.target - self.th, self.integ], dtype=np.float32)
+        return np.array([self.th_meas, self.om_meas, self.target - self.th_meas, self.integ],
+                        dtype=np.float32)
 
     def reset(self, seed=None, options=None):
         self.integ, self.pid_integ = 0.0, 0.0
         super().reset(seed=seed, options=options)
         lo, hi = self.th_min + 0.05, self.th_max - 0.05
         self.th, self.target = self.np_random.uniform(lo, hi), self.np_random.uniform(lo, hi)
+        self._measure()
         self.m, self.tau_max = self.m_nom, self.tau_max_nom
         self.tau_d, self.payload_k, self.payload_factor = False, None, 1.0
         if self.randomize:
@@ -66,8 +83,9 @@ class RobustBoomEnv(BoomEnv):
         u = float(np.clip(action[0], -1, 1))
         if self.residual:
             kp, ki, kd = PID_GAINS
-            e = self.target - self.th
-            u_raw = kp * e + ki * self.pid_integ - kd * self.om + self.u_ff_scale * np.cos(self.th) + u
+            e = self.target - self.th_meas
+            u_raw = (kp * e + ki * self.pid_integ - kd * self.om_meas
+                     + self.u_ff_scale * np.cos(self.th_meas) + u)
             if abs(u_raw) < 1.0:                                       # anti-windup
                 self.pid_integ += e * self.dt
             u = float(np.clip(u_raw, -1, 1))
@@ -80,7 +98,8 @@ class RobustBoomEnv(BoomEnv):
         power_W = abs(tau * self.om)
         self.energy_J += power_W * self.dt                        # mechanical work, same as BoomEnv
         err = self.target - self.th
-        self.integ = float(np.clip(self.integ + err * self.dt, -1.0, 1.0))
+        self._measure()
+        self.integ = float(np.clip(self.integ + (self.target - self.th_meas) * self.dt, -1.0, 1.0))
         reward = -(err ** 2 + 0.01 * self.om ** 2 + self.w_energy * power_W / POWER_SCALE_W)
         self.k += 1
         return self._obs(), reward, False, self.k >= self.max_steps, {}
