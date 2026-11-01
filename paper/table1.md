@@ -1,0 +1,12 @@
+| Controller | Mean [cm] | Worst [cm] | Energy [kJ] | > 20 cm [%] | out100 > 20 cm [%] | Worst variant > 20 cm [%] |
+|---|---:|---:|---:|---:|---:|---|
+| plain w=0.0 | 7.0 | 39.8 | 173.6 | 7.7 | 9.7 | 18.7 (m_x0.42) |
+| plain w=0.1 | 5.5 | 40.0 | 127.9 | 3.7 | 10.0 | 16.3 (m_x0.42) |
+| plain w=0.3 | 6.1 | 55.2 | 100.8 | 1.3 | 7.3 | 66.7 (m_x0.42) |
+| residual w=0.0 | 4.9 | 29.1 | 150.8 | 4.3 | 18.0 | 5.3 (tau_d) |
+| residual w=0.1 | 5.2 | 23.0 | 124.7 | 2.3 | 0.0 | 26.0 (m_x0.42) |
+| residual w=0.3 | 6.4 | 26.1 | 103.1 | 1.7 | 9.7 | 63.3 (m_x0.42) |
+| pid | 7.1 | 21.4 | 68.6 | 1.0 | 18.0 | 100.0 (m_x0.42) |
+| pid_ki | 8.5 | 21.6 | 97.7 | 1.0 | 14.0 | 99.0 (m_x0.42) |
+
+new100 baseline unless noted. Source: rl/08b_eval_n10.csv. Seeds: mean of means, worst of maxima, mean of shares.
