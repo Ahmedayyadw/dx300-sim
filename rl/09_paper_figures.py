@@ -35,7 +35,7 @@ FIG_DIR, PAPER_DIR = "paper/figs", "paper"
 CONFIGS, WEIGHTS = ["plain", "residual"], ["0.0", "0.1", "0.3"]
 PIDS = {"pid": (0.5, 0.0, 0.25), "pid_ki": (2.0, 0.1, 1.0)}   # Kp, Ki, Kd tuned in 07
 FIG2_VARIANTS = ["baseline", "m_x0.42", "tau_d", "payload_x1.2", "noise_1.0"]
-FIG2_CONTROLLERS = ["pid", "pid_ki", "plain w=0.1", "residual w=0.1", "plain w=0.3"]
+FIG2_CONTROLLERS = ["pid", "pid_ki", "plain w=0.1", "plain w=0.3", "residual w=0.0", "residual w=0.1"]
 FIG3_CONTROLLERS = ["pid_ki", "plain w=0.1", "residual w=0.1"]
 FIG3_SUBSTEPS, PAYLOAD_K, PAYLOAD_FACTOR = 10, 100, 1.2
 # Fig 3 caption rule: among the new100 scenarios with target in [-10, +15] deg (boom near horizontal,
@@ -47,7 +47,28 @@ COLORS = {"plain w=0.0": "#9ecae1", "plain w=0.1": "#3182bd", "plain w=0.3": "#0
           "residual w=0.0": "#fdae6b", "residual w=0.1": "#e6550d", "residual w=0.3": "#a63603",
           "pid": "#969696", "pid_ki": "#252525"}
 LABELS = [f"{c} w={w}" for c in CONFIGS for w in WEIGHTS] + list(PIDS)
-LABEL_OFFSETS = {"plain w=0.1": (4, -9), "residual w=0.3": (4, -9)}   # Fig 1, points; default (4, 3)
+# Fig 1 label placement: (dx, dy) in points and horizontal alignment; default (4, 3, "left")
+LABEL_OFFSETS = {"plain w=0.1": (-5, -3, "right"), "residual w=0.3": (4, -9, "left")}
+
+# display names for figures and Table 1; CSV keys stay internal
+VARIANT_NAMES = {"baseline": "Nominal", "m_x0.42": "Mass ×0.42", "tau_d": "Torque(θ)",
+                 "payload_x1.2": "Payload ×1.2", "noise_0.2": "Noise 0.2°", "noise_0.5": "Noise 0.5°",
+                 "noise_1.0": "Noise 1°", "J_x0.38": "Inertia ×0.38"}
+TEX_SUBS = {"×": "$\\times$", "°": "$^\\circ$", "θ": "$\\theta$"}
+
+
+def name(label):
+    """Display name of a controller label: pid, pid_ki, plain w=X, residual w=X."""
+    if label in PIDS:
+        return {"pid": "PID", "pid_ki": "PID + I"}[label]
+    config, w = label.split(" w=")
+    return f"{'SAC' if config == 'plain' else 'Residual SAC'} w={w}"
+
+
+def tex(text):
+    for k, v in TEX_SUBS.items():
+        text = text.replace(k, v)
+    return text.replace("_", "\\_")
 
 plt.rcParams.update({"font.size": 8, "axes.labelsize": 8, "axes.titlesize": 8, "legend.fontsize": 7,
                      "xtick.labelsize": 7, "ytick.labelsize": 7, "font.family": "serif",
@@ -96,9 +117,9 @@ fig, ax = plt.subplots(figsize=(COL_W, 2.6))
 for label in LABELS:
     x, y = agg(label, "new100", "baseline")[2], worst_variant(label)[1]
     ax.scatter(x, y, s=28, color=COLORS[label], edgecolor="k", linewidth=0.4, zorder=3)
-    ax.annotate(label, (x, y), xytext=LABEL_OFFSETS.get(label, (4, 3)), textcoords="offset points",
-                fontsize=6.5)
-ax.set_xlabel("Mean energy, new100 baseline [kJ]")
+    dx, dy, ha = LABEL_OFFSETS.get(label, (4, 3, "left"))
+    ax.annotate(name(label), (x, y), xytext=(dx, dy), textcoords="offset points", ha=ha, fontsize=6.5)
+ax.set_xlabel("Mean energy, new100 nominal [kJ]")
 ax.set_ylabel("Worst variant: share > 20 cm [%]")
 ax.grid(alpha=0.3, linewidth=0.5)
 ax.set_ylim(bottom=0)
@@ -111,11 +132,11 @@ xs = np.arange(len(FIG2_VARIANTS))
 for i, label in enumerate(FIG2_CONTROLLERS):
     ys = [agg(label, "new100", v)[3] for v in FIG2_VARIANTS]
     ax.bar(xs + (i - (n - 1) / 2) * width, ys, width, color=COLORS[label], edgecolor="k",
-           linewidth=0.4, label=label)
-ax.set_xticks(xs, FIG2_VARIANTS)
+           linewidth=0.4, label=name(label))
+ax.set_xticks(xs, [VARIANT_NAMES[v] for v in FIG2_VARIANTS])
 ax.set_ylabel("Share > 20 cm [%]")
 ax.grid(axis="y", alpha=0.3, linewidth=0.5)
-ax.legend(ncol=n, loc="lower center", bbox_to_anchor=(0.5, 1.0), frameon=False)
+ax.legend(ncol=3, loc="lower center", bbox_to_anchor=(0.5, 1.0), frameon=False)
 save(fig, "fig2_robustness_bars")
 
 # Fig 3: payload trajectory, live, same reset/variant logic as rl/08b_eval.py
@@ -186,18 +207,18 @@ for label in FIG3_CONTROLLERS:
         if trunc:
             break
     t = np.arange(len(th)) * env.dt
-    ax.plot(t, np.degrees(th), color=COLORS[label], linewidth=1.1, label=label)
+    ax.plot(t, np.degrees(th), color=COLORS[label], linewidth=1.1, label=name(label))
     ax_u.step(t[:-1], us, where="post", color=COLORS[label], linewidth=0.9)   # u held over each step
     print(f"fig3 {label:<14} final error {cm(abs(np.degrees(target - env.th))):5.1f} cm,"
           f" {env.energy_J / 1000:6.1f} kJ")
-ax.axhline(np.degrees(target), color="k", linestyle="--", linewidth=0.8, label="target")
+ax.axhline(np.degrees(target), color="k", linestyle="--", linewidth=0.8, label="Target")
 for a in (ax, ax_u):
     a.axvline(PAYLOAD_K * env.dt, color="#d62728", linestyle=":", linewidth=0.9)
     a.grid(alpha=0.3, linewidth=0.5)
-ax.annotate(f"payload x{PAYLOAD_FACTOR}", (PAYLOAD_K * env.dt, ax.get_ylim()[1]),
+ax.annotate(f"Payload ×{PAYLOAD_FACTOR}", (PAYLOAD_K * env.dt, ax.get_ylim()[1]),
             xytext=(-3, -9), textcoords="offset points", ha="right", color="#d62728", fontsize=6.5)
 ax.set_ylabel(r"Boom angle $\theta$ [deg]")
-ax.legend(frameon=False, loc="best")
+ax.legend(frameon=False, loc="upper right", handlelength=1.5)
 ax_u.set_ylim(-1.05, 1.05)
 ax_u.set_xlabel("Time [s]")
 ax_u.set_ylabel("Command $u$ [-]")
@@ -216,14 +237,15 @@ with open(f"{PAPER_DIR}/table1.md", "w") as f:
             " Worst variant > 20 cm [%] |\n")
     f.write("|---|---:|---:|---:|---:|---:|---|\n")
     for label, m, x, k, o, oo, ov, v in table:
-        f.write(f"| {label} | {m:.1f} | {x:.1f} | {k:.1f} | {o:.1f} | {oo:.1f} | {ov:.1f} ({v}) |\n")
-    f.write(f"\nnew100 baseline unless noted. {src}\n")
+        f.write(f"| {name(label)} | {m:.1f} | {x:.1f} | {k:.1f} | {o:.1f} | {oo:.1f} |"
+                f" {ov:.1f} ({VARIANT_NAMES.get(v, v)}) |\n")
+    f.write(f"\nnew100 nominal unless noted. {src}\n")
 with open(f"{PAPER_DIR}/table1.tex", "w") as f:
     f.write("% " + src + "\n\\begin{tabular}{lrrrrrl}\n\\hline\n"
             "Controller & Mean & Worst & Energy & $>$20\\,cm & out100 $>$20\\,cm & Worst variant $>$20\\,cm \\\\\n"
             " & [cm] & [cm] & [kJ] & [\\%] & [\\%] & [\\%] \\\\\n\\hline\n")
     for label, m, x, k, o, oo, ov, v in table:
-        tex_label, tex_v = label.replace("_", "\\_"), v.replace("_", "\\_")
+        tex_label, tex_v = tex(name(label)), tex(VARIANT_NAMES.get(v, v))
         f.write(f"{tex_label} & {m:.1f} & {x:.1f} & {k:.1f} & {o:.1f} & {oo:.1f} & {ov:.1f} ({tex_v}) \\\\\n")
     f.write("\\hline\n\\end{tabular}\n")
 print(f"{PAPER_DIR}/table1.md, {PAPER_DIR}/table1.tex")
