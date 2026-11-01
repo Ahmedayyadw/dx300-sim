@@ -4,7 +4,8 @@ Reads --csv (default rl/08b_eval_n10.csv, columns as written by rl/08b_eval.py) 
   figs/fig1_energy_vs_robustness.{png,pdf}  x = mean kJ on new100 baseline, y = worst variant
                                             % > 20 cm on new100 (all variants), one point per controller
   figs/fig2_robustness_bars.{png,pdf}       % > 20 cm per variant on new100, selected controllers
-  figs/fig3_payload_trajectory.{png,pdf}    theta(t) and target, one new100 scenario (largest move),
+  figs/fig3_payload_trajectory.{png,pdf}    theta(t) and target (top), applied command u(t) (bottom),
+                                            one new100 scenario chosen by rule (FIG3_TARGET_DEG),
                                             payload x1.2 at step 100, run live with substeps = 10
   table1.md, table1.tex                     new100 baseline (mean cm, worst cm, kJ, % > 20 cm),
                                             out100 baseline % > 20 cm, worst variant % > 20 cm
@@ -22,7 +23,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from stable_baselines3 import SAC
-from boom_env_robust import RobustBoomEnv
+from boom_env_robust import RobustBoomEnv, PID_GAINS
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  # repo root, for dx300sim
 from dx300sim import dx300_params as P
@@ -37,6 +38,9 @@ FIG2_VARIANTS = ["baseline", "m_x0.42", "tau_d", "payload_x1.2", "noise_1.0"]
 FIG2_CONTROLLERS = ["pid", "pid_ki", "plain w=0.1", "residual w=0.1", "plain w=0.3"]
 FIG3_CONTROLLERS = ["pid_ki", "plain w=0.1", "residual w=0.1"]
 FIG3_SUBSTEPS, PAYLOAD_K, PAYLOAD_FACTOR = 10, 100, 1.2
+# Fig 3 caption rule: among the new100 scenarios with target in [-10, +15] deg (boom near horizontal,
+# gravity torque large, so the payload step matters), the one with the largest move |target - theta0|.
+FIG3_TARGET_DEG = (-10.0, 15.0)
 
 # one color per controller in every figure: blues = plain, oranges = residual, greys = PID
 COLORS = {"plain w=0.0": "#9ecae1", "plain w=0.1": "#3182bd", "plain w=0.3": "#08519c",
@@ -117,8 +121,12 @@ save(fig, "fig2_robustness_bars")
 # Fig 3: payload trajectory, live, same reset/variant logic as rl/08b_eval.py
 rng = np.random.default_rng(123)    # new100, same as 05/06/07/08b
 NEW = [(rng.uniform(-0.4, 0.9), rng.uniform(-0.3, 0.9)) for _ in range(100)]
-i_sc = int(np.argmax([abs(tg - th0) for th0, tg in NEW]))
+lo, hi = np.radians(FIG3_TARGET_DEG)
+i_sc = max((i for i, (_, tg) in enumerate(NEW) if lo <= tg <= hi),
+           key=lambda i: abs(NEW[i][1] - NEW[i][0]))
 th0, target = NEW[i_sc]
+print(f"fig3 scenario: new100 #{i_sc}, theta0 {np.degrees(th0):.1f} deg -> target"
+      f" {np.degrees(target):.1f} deg (rule: target in {FIG3_TARGET_DEG} deg, largest move)")
 J_NOM = RobustBoomEnv().J
 
 
@@ -145,7 +153,20 @@ def pid_policy(gains, u_ff_scale, dt):
     return act
 
 
-fig, ax = plt.subplots(figsize=(COL_W, 2.4))
+def applied_u(env, a):
+    """Command u that env.step(a) applies: a clipped, or for the residual env the PID sum, as in
+    RobustBoomEnv.step(). Call before env.step(a)."""
+    u = float(np.clip(a[0], -1, 1))
+    if env.residual:
+        kp, ki, kd = PID_GAINS
+        e = env.target - env.th_meas
+        u = float(np.clip(kp * e + ki * env.pid_integ - kd * env.om_meas
+                          + env.u_ff_scale * np.cos(env.th_meas) + u, -1, 1))
+    return u
+
+
+fig, (ax, ax_u) = plt.subplots(2, 1, figsize=(COL_W, 3.6), sharex=True,
+                               gridspec_kw={"height_ratios": [2, 1]})
 for label in FIG3_CONTROLLERS:
     if label in PIDS:
         env = RobustBoomEnv(w_energy=0.0, residual=False, randomize=False, substeps=FIG3_SUBSTEPS)
@@ -156,27 +177,32 @@ for label in FIG3_CONTROLLERS:
                             substeps=FIG3_SUBSTEPS)
         model = SAC.load(f"{MODEL_DIR}/08b_{config}_w{w}_s0.zip", device="cpu")
         act = lambda obs, state, model=model: model.predict(obs, deterministic=True)[0]
-    obs, state, th = start(env, th0, target), {"integ": 0.0}, [th0]
+    obs, state, th, us = start(env, th0, target), {"integ": 0.0}, [th0], []
     for _ in range(env.max_steps):
-        obs, _, _, trunc, _ = env.step(act(obs, state))
+        a = act(obs, state)
+        us.append(applied_u(env, a))
+        obs, _, _, trunc, _ = env.step(a)
         th.append(env.th)
         if trunc:
             break
     t = np.arange(len(th)) * env.dt
     ax.plot(t, np.degrees(th), color=COLORS[label], linewidth=1.1, label=label)
+    ax_u.step(t[:-1], us, where="post", color=COLORS[label], linewidth=0.9)   # u held over each step
     print(f"fig3 {label:<14} final error {cm(abs(np.degrees(target - env.th))):5.1f} cm,"
           f" {env.energy_J / 1000:6.1f} kJ")
 ax.axhline(np.degrees(target), color="k", linestyle="--", linewidth=0.8, label="target")
-ax.axvline(PAYLOAD_K * env.dt, color="#d62728", linestyle=":", linewidth=0.9)
-ax.annotate(f"payload x{PAYLOAD_FACTOR}", (PAYLOAD_K * env.dt, ax.get_ylim()[0]),
-            xytext=(3, 3), textcoords="offset points", color="#d62728", fontsize=6.5)
-ax.set_xlabel("Time [s]")
+for a in (ax, ax_u):
+    a.axvline(PAYLOAD_K * env.dt, color="#d62728", linestyle=":", linewidth=0.9)
+    a.grid(alpha=0.3, linewidth=0.5)
+ax.annotate(f"payload x{PAYLOAD_FACTOR}", (PAYLOAD_K * env.dt, ax.get_ylim()[1]),
+            xytext=(-3, -9), textcoords="offset points", ha="right", color="#d62728", fontsize=6.5)
 ax.set_ylabel(r"Boom angle $\theta$ [deg]")
-ax.grid(alpha=0.3, linewidth=0.5)
 ax.legend(frameon=False, loc="best")
+ax_u.set_ylim(-1.05, 1.05)
+ax_u.set_xlabel("Time [s]")
+ax_u.set_ylabel("Command $u$ [-]")
+fig.align_ylabels((ax, ax_u))
 save(fig, "fig3_payload_trajectory")
-print(f"fig3 scenario: new100 #{i_sc}, theta0 {np.degrees(th0):.1f} deg -> target"
-      f" {np.degrees(target):.1f} deg, substeps {FIG3_SUBSTEPS}")
 
 # Table 1
 table = []
