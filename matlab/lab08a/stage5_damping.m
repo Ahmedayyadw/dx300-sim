@@ -99,8 +99,8 @@ E.J_with_front   = fld(J_total,'kg m^2','estimated','stage3_validate.m J_brick+J
 E.J_range_vs_pose= fld(J_range,'kg m^2','estimated','Stage 2 (stage2_mass.m) J_A over arm poses [min max]');
 E.front_masses   = fld(struct('m_D_point_kg',m_Dpt,'m_arm_point_kg',m_armpt,'m_tip_point_kg',m_tippt,'arm_length_m',La,'arm_angle_rel_boom_rad',phi_rel), ...
     'kg / m / rad','estimated','stage2_mass.m: masses OFFICIAL (M p.62,65,66; S5 p.21), lumping/pose/payload density 1800 kg/m^3 ESTIMATED');
-E.th_min = fld(P.th_min,'rad','official','dx300_params_lab08a.m (per param_audit)');
-E.th_max = fld(P.th_max,'rad','official','dx300_params_lab08a.m (per param_audit)');
+E.th_min = fld(P.th_min,'rad','estimated','derived from official cylinder lengths + estimated pins (stage 1)');
+E.th_max = fld(P.th_max,'rad','estimated','derived from official cylinder lengths + estimated pins (stage 1)');
 E.tau_up   = fld(struct('theta_rad',K.th(idx),'tau_Nm',K.tau_up(idx)),  'rad / N m','estimated', ...
     'stage1_kin.mat: n_cyl*p_relief*A_cap*r(theta), 330 bar, no losses; bore/p OFFICIAL, moment arm r from ESTIMATED pins');
 E.tau_down = fld(struct('theta_rad',K.th(idx),'tau_Nm',K.tau_down(idx)),'rad / N m','estimated', ...

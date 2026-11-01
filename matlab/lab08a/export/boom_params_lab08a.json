@@ -53,14 +53,14 @@
   "th_min": {
     "value": -0.82379540694132358,
     "unit": "rad",
-    "status": "official",
-    "source": "dx300_params_lab08a.m (per param_audit)"
+    "status": "estimated",
+    "source": "derived from official cylinder lengths + estimated pins (stage 1)"
   },
   "th_max": {
     "value": 1.054178868204575,
     "unit": "rad",
-    "status": "official",
-    "source": "dx300_params_lab08a.m (per param_audit)"
+    "status": "estimated",
+    "source": "derived from official cylinder lengths + estimated pins (stage 1)"
   },
   "tau_up": {
     "value": {
