@@ -1,16 +1,89 @@
 # DX300 boom RL study
 
-RL (SAC, stable-baselines3) controller for the Doosan DX300 excavator boom, studying the trade-off between positioning accuracy and actuator energy.
+Soft Actor-Critic (SAC, stable-baselines3) control of the boom of a Doosan DX300 hydraulic excavator, studying the trade-off between positioning accuracy and actuator energy. The plant is a single boom joint in simulation. This repo is Stage 1 of the master's thesis "AI-Based Fault Detection and Energy Management of a Hydraulic Excavator Using a Digital Twin" (Okan University).
 
-## Key result
+**Stage 1 result:** a tuned PID with gravity feed-forward uses the least energy on the nominal model (68.6 kJ, 1.0 % of moves over 20 cm), but misses 20 cm on 100 % of moves with Payload ×1.2. Domain-randomized SAC stays at 3.0–8.0 % under Payload ×1.2, at 100.8–173.6 kJ on the nominal model. SAC w=0.3 (100.8 kJ) is close to the energy of PID + I (97.7 kJ, 37 % misses under Payload ×1.2). Source: [paper/table1.md](paper/table1.md) and [rl/08b_eval_n10.csv](rl/08b_eval_n10.csv).
 
-**A tuned PID uses the least energy on the nominal model (68.6 kJ, 1.0 % of moves over 20 cm), but it fails when the load changes: with Payload ×1.2, PID misses 20 cm on 100 % of moves and PID + I on 37 %. Domain-randomized SAC stays at 3.0–8.0 % across all six configurations. SAC w=0.3 reaches 3.0 % at 100.8 kJ, about the same energy as PID + I (97.7 kJ).**
+## Repo layout
 
-Nominal numbers are from [paper/table1.md](paper/table1.md). Payload ×1.2 numbers are the `new100` / `payload_x1.2` rows of [rl/08b_eval_n10.csv](rl/08b_eval_n10.csv) (Fig 2). All are 100 unseen scenarios, averaged over 3 seeds.
+```
+dx300sim/          DX300 parameters (dx300_params.py: boom length 6.245 m, pins, end stops) and boom geometry
+rl/                RL code and results
+  boom_env.py        1-DOF boom env (labs 02–07)
+  boom_env_robust.py randomized boom env, power reward, substeps option (labs 08b–09)
+  0N_*.py            numbered lab scripts, with their CSV / PNG / log results next to them
+  models/, tb/       trained models and TensorBoard logs (gitignored)
+paper/             Fig 1–3 (figs/) and Table 1 (table1.md, table1.tex), written by rl/09_paper_figures.py
+matlab/lab08a/     Simscape Multibody + Fluids boom model, figures, parameter export (export/boom_params_lab08a.json)
+ml/                early fault detection experiments (Isolation Forest, LSTM autoencoder)
+docs/              acceptable error rationale (20 cm), env vs DX300 parameter audit
+tests/             pytest tests for the parameters and boom geometry
+```
 
-## Results
+## Setup and reproduction
 
-Table 1: controllers trained on the randomized env ([rl/08b_robust_train.py](rl/08b_robust_train.py)) and the 07 PIDs, evaluated with 10 integration substeps ([rl/08b_eval.py](rl/08b_eval.py) `--substeps 10`). The first five columns use the nominal model on `new100`.
+Run everything from the repo root.
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+pytest
+```
+
+Train (long runs; each 08b model takes about 12 min on the author's machine, see [rl/08b_train_log.csv](rl/08b_train_log.csv)):
+
+```bash
+python rl/04_knee_sweep.py        # 10 weights x 3 seeds, 20k steps
+python rl/05_generalization.py    # w = 0, 0.1, 0.3, 0.5 x 3 seeds; saves the models used by 05b, 06, 06b
+python rl/08b_robust_train.py     # 18 models: plain and residual SAC x w = 0, 0.1, 0.3 x 3 seeds, 100k steps
+```
+
+Evaluate:
+
+```bash
+python rl/05b_extrapolation.py
+python rl/06_sensitivity.py
+python rl/06b_noise.py
+python rl/07_pid_baseline.py
+python rl/08b_eval.py --substeps 10     # writes rl/08b_eval_n10.csv
+python rl/08c_substep_check.py
+python rl/08d_eval_simscape_J.py
+```
+
+Regenerate the paper figures and Table 1 (reads `rl/08b_eval_n10.csv`; Fig 3 needs the 08b models):
+
+```bash
+python rl/09_paper_figures.py
+```
+
+Simscape model (MATLAB):
+
+```bash
+matlab -batch "cd('matlab/lab08a'); stage4_run"
+```
+
+## Stage 1 labs
+
+Unless noted: 3 seeds (0, 1, 2), 100 unseen scenarios (`new100`), "misses" = share of moves with tip error over 20 cm, energy = mean mechanical work per move. Tip error = 6.245 m × angle error (1° ≈ 10.9 cm).
+
+| Lab | What | Key result |
+|---|---|---|
+| 03 | Energy-weight sweep, w ∈ {0, 0.05, 0.5, 2.0}, 20 scenarios | Accuracy vs energy trade-off ([rl/03_energy_sweep.png](rl/03_energy_sweep.png); plot only, no CSV). |
+| 04 | Knee sweep, 10 weights from 0 to 2.0 | w=0.1 chosen as operating point: mean error 0.58° at 131.6 kJ vs 0.67° at 155.4 kJ for w=0 (−15 % energy). Mean error passes 2° between w=0.5 (1.69°) and w=0.75 (3.06°). |
+| 05 | Generalization to `new100` | w=0.1: 0 % misses at 127.3 kJ; w=0: 1.3 % at 147.6 kJ. |
+| 05b | Out-of-range targets (`out100`) | Policies fail outside the training range. w=0.1 worst error 4.78° (52 cm), 34 % misses. The 20 cm claim holds only inside the trained envelope. |
+| 06 / 06b | Robustness of the 05 models | w=0.1 fails under Mass ×0.42 (91 % misses), Payload ×1.2 (48 %), angle-dependent torque limit Torque(θ) (17 %). It holds under sensor noise up to 1° (0.3 %) and Inertia ×0.38 (0 %). w=0 is more robust to mass (19 %), payload (2.3 %) and Torque(θ) (2.3 %), but not to Inertia ×0.38 (20 %, an integrator artifact, see 08c). |
+| 07 | PID baselines with gravity feed-forward | PID matches SAC w=0.1 accuracy (mean 0.68° vs 0.63°, 1 % vs 0 % misses) at 68.5 vs 127.3 kJ. PID fails under Mass ×0.42 (100 %), Payload ×1.2 (100 %), Torque(θ) (44 %). PID + I: 98.3 kJ, fails under Mass ×0.42 (99 %) and Payload ×1.2 (37 %). |
+| 08a | Simscape boom model (MATLAB) | Multibody + Fluids boom with front attachment masses, hydraulic cylinder, valve and relief. Validated vs analytic < 0.1 %, stall torque 0.24 %, boom-up 5.62 s, damping ζ sweep. Geometry estimated from a drawing; parameters exported to JSON. Not yet used by the RL env. |
+| 08b | Robust retrain: 18 models, plain + residual SAC (on top of the 07 PID), power reward, randomized mass / Torque(θ) / payload, full end-stop range | Plain SAC w=0.1 vs 06: payload misses 48 % → 6.3 %, Torque(θ) 17 % → 3.0 %, `out100` 34 % → 10.0 % (Residual SAC w=0.1: 7.3 %, 5.0 %, 0.0 %). Nominal energy 100.8–127.9 kJ for w=0.1/0.3 (150.8–173.6 kJ for w=0) vs 68.6 kJ for PID. SAC w=0.3 is close to PID + I energy (100.8 vs 97.7 kJ) with fewer payload misses (3.0 % vs 37 %). Mass ×0.42 remains the hardest case (Table 1). |
+| 08c | Integrator check | The Inertia ×0.38 chattering is an explicit-Euler artifact: h·b/J = 0.05 × 6e5 / (0.38 × 8e4) ≈ 0.99 at one step per 0.05 s. 10 substeps fix it (Plain SAC w=0.1 misses 20.7 % → 4.0 %). All 08b–09 results use 10 substeps. |
+| 08d | Eval at the 08a inertia with front attachment (J ≈ 262k kg m²) and 08a torque limit τ_up(θ) | Plain SAC w=0.1: 8.0 % misses at 209.5 kJ; Residual SAC w=0.1: 15.0 % at 190.6 kJ; PID: 100 %; PID + I: 72 %. Eval only, no retraining. |
+| 09 | Paper figures | Fig 1 energy vs robustness, Fig 2 robustness per variant, Fig 3 payload trajectory, Table 1, in [paper/](paper/). 3 seeds, 10 integration substeps. |
+
+### Table 1
+
+Controllers from 08b and the 07 PIDs, 10 substeps ([rl/08b_eval_n10.csv](rl/08b_eval_n10.csv)). The first five columns use the nominal model on `new100`.
 
 | Controller | Mean [cm] | Worst [cm] | Energy [kJ] | > 20 cm [%] | out100 > 20 cm [%] | Worst variant > 20 cm [%] |
 |---|---:|---:|---:|---:|---:|---|
@@ -23,7 +96,7 @@ Table 1: controllers trained on the randomized env ([rl/08b_robust_train.py](rl/
 | PID | 7.1 | 21.4 | 68.6 | 1.0 | 18.0 | 100.0 (Mass ×0.42) |
 | PID + I | 8.5 | 21.6 | 97.7 | 1.0 | 14.0 | 99.0 (Mass ×0.42) |
 
-Seeds: mean of means, worst of maxima, mean of shares. Figures and table are generated by [rl/09_paper_figures.py](rl/09_paper_figures.py).
+Seeds: mean of means, worst of maxima, mean of shares.
 
 ![Fig 1: energy vs robustness](paper/figs/fig1_energy_vs_robustness.png)
 
@@ -35,59 +108,27 @@ Seeds: mean of means, worst of maxima, mean of shares. Figures and table are gen
 
 ## Method
 
-- **Environment:** [rl/boom_env.py](rl/boom_env.py), a 1-DOF boom model (gravity, viscous damping, mechanical end stops at -47.2° and 60.4°). One episode is 200 steps of 0.05 s (10 s). The action is a normalised torque command in [-1, 1].
-- **Robust env (08b):** [rl/boom_env_robust.py](rl/boom_env_robust.py) covers the full angle range. Each episode randomizes mass, the angle-dependent torque limit and a payload step. The observation adds the error integral, and the reward uses mechanical power instead of u². In the residual variant, SAC adds to the 07 PID command.
-- **Reward (01–05):** `-(err² + 0.01·ω² + w·u²)`, where `err` is the angle error (rad), `ω` the boom angular velocity and `u` the command.
-- **Energy (reported):** mechanical work at the boom joint, `Σ |τ·ω|·dt`, in kJ per move. This is not hydraulic energy: pump, valve and cylinder losses are not modelled.
-- **Training:** SAC (stable-baselines3, `MlpPolicy`), 3 seeds (0, 1, 2) per configuration. Steps per run are 20k for 04/05 and 100k for 08b.
-- **Evaluation:** deterministic policy on 100 unseen scenarios (`new100`, RNG seed 123) and 100 out-of-range scenarios (`out100`, RNG seed 321), plus the model variants from 06/06b.
-- **Tip error:** boom length L = 6.245 m from [dx300sim/dx300_params.py](dx300sim/dx300_params.py); tip error = L × angle error in radians, so 1° ≈ 10.9 cm.
+- **Environment:** [rl/boom_env.py](rl/boom_env.py), a 1-DOF boom (gravity, viscous damping, end stops at −47.2° and 60.4°). One episode is 200 steps of 0.05 s. The action is a normalised torque command in [−1, 1].
+- **Robust env (08b):** [rl/boom_env_robust.py](rl/boom_env_robust.py) covers the full end-stop range and randomizes mass, the Torque(θ) limit and a payload step per episode. The observation adds the error integral; the reward uses mechanical power instead of u². Residual SAC adds its action to the 07 PID command.
+- **Reward (01–05):** `-(err² + 0.01·ω² + w·u²)`.
+- **Energy:** mechanical work at the boom joint, `Σ |τ·ω|·dt`. Pump, valve and cylinder losses are not modelled.
+- **Evaluation:** deterministic policy; `new100` (RNG seed 123) and `out100` (RNG seed 321), plus the 06/06b model variants.
 
 ## Limitations
 
-- **Placeholder plant.** The plant parameters in [rl/boom_env.py](rl/boom_env.py) are still placeholders; see [docs/param_audit.md](docs/param_audit.md).
-  - Lab 08a ([matlab/lab08a/](matlab/lab08a/), Simscape) now gives estimated values, exported to [matlab/lab08a/export/boom_params_lab08a.json](matlab/lab08a/export/boom_params_lab08a.json). `boom_env.py` does not use them yet.
-  - Its gravity term uses the boom mass only. In the 08a model (arm perpendicular to the boom), the front attachment makes up 71–88 % of the gravity torque over the boom range and ≈ 88 % of J. These shares are computed from the front masses and `J_boom_only` / `J_with_front` in the JSON.
-  - All 08a geometry is estimated: pins come from a drawing, and the end stops are derived from the pins.
-- **Mass ×0.42 is the hardest case.** It is the worst variant for every controller except Residual SAC w=0.0 (Table 1).
-- **Explicit Euler.** All results above use 10 integration substeps per 0.05 s control step. With 1 substep, the Inertia ×0.38 variant chatters numerically; see [rl/08c_substep_check.py](rl/08c_substep_check.py).
-- **Scope.** Boom joint only; arm, bucket and swing are not modelled. Simulation only: torque is applied directly at the joint, and the RL env has no hydraulic model. The task is coarse positioning (lifting to a truck, moving into position before a dig), not fine grading.
-- **Tolerance.** The 20 cm tip tolerance is a design assumption, not a published standard; see [docs/acceptable_error.md](docs/acceptable_error.md).
+- **Single boom joint.** Arm, bucket and swing are not modelled. Torque is applied directly at the joint; the RL env has no hydraulic model.
+- **Simulated, partly placeholder parameters.** [rl/boom_env.py](rl/boom_env.py) still uses placeholder values ([docs/param_audit.md](docs/param_audit.md)). Its gravity term uses the boom mass only; in the 08a model the front attachment is 71–88 % of the gravity torque and ≈ 88 % of J. The 08a Simscape model exists but uses estimated geometry and is not yet coupled to the RL env (08d swaps only J and the torque limit).
+- **Energy.** SAC uses more energy than the nominal PID (100.8–173.6 vs 68.6 kJ). Its advantage is robustness, not efficiency.
+- **Trained range only.** Results hold inside the trained range. Outside it (05b), errors reach 52 cm.
+- **Tolerance.** The 20 cm tip tolerance is a design assumption, not a published standard ([docs/acceptable_error.md](docs/acceptable_error.md)).
 
-## Scripts
+## Roadmap
 
-- `rl/01_`–`05_`: SAC basics, energy and knee sweep, generalization on 100 unseen scenarios.
-- `rl/05b_extrapolation.py`: extrapolation test with targets outside the training range, plus the generalization plot.
-- `rl/06_sensitivity.py`: 05 models under DX300-based physics changes (mass, inertia, angle-dependent torque).
-- `rl/06b_noise.py`: 05 models under sensor noise and a payload step.
-- `rl/07_pid_baseline.py`: PID baselines (PID, PID + I) on the same scenarios and variants.
-- `rl/08b_robust_train.py`: SAC on the randomized env, plain and PID residual × w ∈ {0, 0.1, 0.3} × 3 seeds.
-- `rl/08b_eval.py`: 08b models vs the PIDs on `new100`/`out100` and all variants. `--substeps N` sets the integrator; N > 1 writes `rl/08b_eval_n{N}.csv`.
-- `rl/08c_substep_check.py`: 1 vs 10 substeps on the nominal and Inertia ×0.38 variants.
-- `rl/09_paper_figures.py`: Fig 1–3 and Table 1 in `paper/`, from `--csv` (default `rl/08b_eval_n10.csv`).
-- `matlab/lab08a/`: Simscape Multibody + Fluids boom model (validated vs analytic < 0.1 %, stall torque 0.24 %, boom-up 5.62 s, damping ζ sweep). Run: `matlab -batch "cd('matlab/lab08a'); stage4_run"`
+- **Lab 08a, next (after the paper):** use the Simscape boom model parameters in the RL env and re-evaluate, building on 08d.
+- **Stage 2:** arm, bucket and swing; pump and valve; engine and fuel map; RL for the full attachment; validation with quarry data.
+- **Stage 3:** digging and breaker loads; energy recovery.
+- **Stage 4:** hydraulic fault detection and a fault-aware controller.
 
-## Repo layout
+## Citation
 
-- `dx300sim/`: DX300 boom parameters and geometry (single source of truth for dimensions).
-- `rl/`: boom environments and numbered RL scripts (`01_` to `09_`), with their CSV and PNG results.
-- `paper/`: paper figures (`figs/`) and Table 1 (`table1.md`, `table1.tex`).
-- `matlab/lab08a/`: Simscape boom model and parameter export.
-- `ml/`: fault detection experiments (Isolation Forest, LSTM autoencoder).
-- `tests/`: pytest tests for the parameters and boom geometry.
-- `docs/`: design notes, including the acceptable error rationale and the parameter audit.
-
-## How to run
-
-Run everything from the repo root.
-
-```bash
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-python rl/08b_eval.py --substeps 10
-python rl/09_paper_figures.py
-pytest
-```
-
-`08b_eval.py` loads the trained models from `rl/models/`, so run `rl/08b_robust_train.py` first. Trained models (`rl/models/`) and TensorBoard logs (`rl/tb/`) are gitignored.
+Paper under preparation (target: ICEEE 2027). Citation will be added on publication.
