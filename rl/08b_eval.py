@@ -9,7 +9,12 @@ Variants (as 06/06b), applied AFTER reset because RobustBoomEnv.reset() restores
 Noise lives inside the env (sigma_th_deg), so the policy observation and the residual PID see the
 same noisy theta and omega. Error and energy use the true state.
 
-Usage: python rl/08b_eval.py [--dry-run]   (dry run: seed 0, 5 scenarios per set, no CSV written)
+Integrator: --substeps N (default 1) is passed to RobustBoomEnv for SAC and PID runs alike; each
+0.05 s command is integrated with N Euler steps of dt / N (see rl/08c_substep_check.py). N = 1 writes
+rl/08b_eval.csv, N > 1 writes rl/08b_eval_n{N}.csv.
+
+Usage: python rl/08b_eval.py [--dry-run] [--substeps N]
+       (dry run: seed 0, 5 scenarios per set, no CSV written)
 """
 import csv
 import os
@@ -23,13 +28,14 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) 
 from dx300sim import dx300_params as P
 
 DRY_RUN = "--dry-run" in sys.argv
+SUBSTEPS = int(sys.argv[sys.argv.index("--substeps") + 1]) if "--substeps" in sys.argv else 1
 CONFIGS = ["plain", "residual"]
 WEIGHTS = [0.0, 0.1, 0.3]
 SEEDS = [0] if DRY_RUN else [0, 1, 2]
 PIDS = {"pid": (0.5, 0.0, 0.25), "pid_ki": (2.0, 0.1, 1.0)}   # Kp, Ki, Kd tuned in 07
 BOOM_LENGTH_M = P.BOOM_LENGTH_OFFICIAL_M
 MODEL_DIR = "rl/models"
-CSV_PATH = "rl/08b_eval.csv"
+CSV_PATH = "rl/08b_eval.csv" if SUBSTEPS == 1 else f"rl/08b_eval_n{SUBSTEPS}.csv"
 
 rng = np.random.default_rng(123)    # same as 05/06/07
 NEW = [(rng.uniform(-0.4, 0.9), rng.uniform(-0.3, 0.9)) for _ in range(100)]
@@ -45,7 +51,8 @@ J_NOM = RobustBoomEnv().J
 
 def make_env(variant, w, residual):
     sigma = float(variant.split("_")[1]) if variant.startswith("noise") else 0.0
-    return RobustBoomEnv(w_energy=w, residual=residual, randomize=False, sigma_th_deg=sigma)
+    return RobustBoomEnv(w_energy=w, residual=residual, randomize=False, sigma_th_deg=sigma,
+                         substeps=SUBSTEPS)
 
 
 def start(env, variant, th0, target):
@@ -119,7 +126,7 @@ if DRY_RUN:
     episodes = len(SETS) * len(VARIANTS) * len(next(iter(SETS.values())))
     per_ep = sac_t / (sac_n * episodes)
     full_s = per_ep * len(CONFIGS) * len(WEIGHTS) * 3 * len(SETS) * len(VARIANTS) * 100
-    print(f"\nDRY RUN: seeds {SEEDS}, {episodes // (len(SETS) * len(VARIANTS))} scenarios per set,"
+    print(f"\nDRY RUN: substeps {SUBSTEPS}, seeds {SEEDS}, {episodes // (len(SETS) * len(VARIANTS))} scenarios per set,"
           f" {CSV_PATH} not written")
     print(f"SAC: {per_ep * 1000:.0f} ms per episode -> full run about {full_s / 60:.0f} min")
 else:
