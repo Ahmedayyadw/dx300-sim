@@ -14,6 +14,10 @@ RobustBoomEnv(w_energy, residual=False, randomize=True):
              observation (e and int(e) from the noisy theta) and the residual PID.
 Dynamics, end stops, energy_J and the final-error measurement are the same as BoomEnv and use the
 true state. With sigma_th_deg = 0 the measurement is the true state.
+substeps   N >= 1: step() holds u and tau fixed and integrates the dynamics N times with dt / N;
+             end stops, energy_J and power are updated every substep. The error integral, payload
+             timing, k and the reward stay on the control step (reward uses the last substep's
+             power). N = 1 is the original single Euler step.
 """
 import os
 import sys
@@ -37,9 +41,9 @@ D0_M = abs(d(0.0))   # about 0.898 m
 
 
 class RobustBoomEnv(BoomEnv):
-    def __init__(self, w_energy=0.05, residual=False, randomize=True, sigma_th_deg=0.0):
+    def __init__(self, w_energy=0.05, residual=False, randomize=True, sigma_th_deg=0.0, substeps=1):
         super().__init__(w_energy=w_energy)
-        self.residual, self.randomize = residual, randomize
+        self.residual, self.randomize, self.substeps = residual, randomize, int(substeps)
         self.m_nom, self.tau_max_nom = self.m, self.tau_max
         self.u_ff_scale = self.m_nom * 9.81 * self.Lc / self.tau_max_nom   # nominal feed-forward
         self.observation_space = spaces.Box(-np.inf, np.inf, (4,), np.float32)
@@ -90,13 +94,15 @@ class RobustBoomEnv(BoomEnv):
                 self.pid_integ += e * self.dt
             u = float(np.clip(u_raw, -1, 1))
         tau = u * self.tau_max
-        tau_g = self.m * 9.81 * self.Lc * np.cos(self.th)
-        self.om += (tau - tau_g - self.b * self.om) / self.J * self.dt
-        self.th += self.om * self.dt
-        if self.th <= self.th_min or self.th >= self.th_max:      # hit end stop
-            self.th, self.om = float(np.clip(self.th, self.th_min, self.th_max)), 0.0
-        power_W = abs(tau * self.om)
-        self.energy_J += power_W * self.dt                        # mechanical work, same as BoomEnv
+        h = self.dt / self.substeps                               # command held over all substeps
+        for _ in range(self.substeps):
+            tau_g = self.m * 9.81 * self.Lc * np.cos(self.th)
+            self.om += (tau - tau_g - self.b * self.om) / self.J * h
+            self.th += self.om * h
+            if self.th <= self.th_min or self.th >= self.th_max:  # hit end stop
+                self.th, self.om = float(np.clip(self.th, self.th_min, self.th_max)), 0.0
+            power_W = abs(tau * self.om)
+            self.energy_J += power_W * h                          # mechanical work, same as BoomEnv
         err = self.target - self.th
         self._measure()
         self.integ = float(np.clip(self.integ + (self.target - self.th_meas) * self.dt, -1.0, 1.0))
