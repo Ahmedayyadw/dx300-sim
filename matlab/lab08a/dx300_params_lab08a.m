@@ -29,5 +29,5 @@ P.p_boost  = 350e5;                  % OFFICIAL [Pa] (350-360 bar)
 P.Q_pump   = 2*247/60000;            % OFFICIAL [m^3/s] (494 L/min)
 
 % End stops
-P.th_min = deg2rad(-47.2);           % OFFICIAL (per param_audit)
-P.th_max = deg2rad(60.4);            % OFFICIAL (per param_audit)
+P.th_min = deg2rad(-47.2);           % ESTIMATED (derived from official cyl lengths + estimated pins)
+P.th_max = deg2rad(60.4);            % ESTIMATED (derived from official cyl lengths + estimated pins)
