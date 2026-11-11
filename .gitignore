@@ -1,8 +1,38 @@
+# Python
 .venv/
 __pycache__/
-rl/tb/
-*.zip
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+*.egg-info/
+
+# Training outputs (large, regenerable)
 rl/tb/
 rl/models/
+*.zip
+
+# MATLAB / Simulink
 *.slxc
 slprj/
+*.asv
+*.autosave
+*.mex*
+sccprj/
+codegen/
+
+# LaTeX build files
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.synctex.gz
+*.toc
+*.out
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
