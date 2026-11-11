@@ -13,6 +13,8 @@ Soft Actor-Critic (SAC, stable-baselines3) control of the boom of a Doosan DX300
 
 **Stage 1 result:** a tuned PID with gravity feed-forward uses the least energy on the nominal model (68.6 kJ, 1.0 % of moves over 20 cm), but misses 20 cm on 100 % of moves with Payload ×1.2. Domain-randomized SAC stays at 3.0–8.0 % under Payload ×1.2, at 100.8–173.6 kJ on the nominal model. SAC w=0.3 (100.8 kJ) is close to the energy of PID + I (97.7 kJ, 37 % misses under Payload ×1.2). Source: [paper/table1.md](paper/table1.md) and [rl/08b_eval_n10.csv](rl/08b_eval_n10.csv).
 
+**Latest result (Lab 10, real plant):** on the plant built from the Lab 08a Simscape export (holding torque within 2 % of Simscape), the gain-scheduled PID `sched` retuned to Kp 0.25, Kd 0.5 misses 20 cm on 0–1 % of moves (mean 0.1 %) over the 36 rows matched to the placeholder plant, against 0–3 % there. E_mech is 134.3–189.7 kJ against 66.8–89.1 kJ, mainly because the real plant carries the front attachment (gravity torque at θ = 0 is ×2.21). It breaks on `dump` under heavy combined noise (up to 80 %). Geometry and friction are ESTIMATED. Source: [rl/10_real_plant.md](rl/10_real_plant.md).
+
 ## Repo layout
 
 ```
@@ -20,6 +22,7 @@ dx300sim/          DX300 parameters (dx300_params.py: boom length 6.245 m, pins,
 rl/                RL code and results
   boom_env.py        1-DOF boom env (labs 02–07)
   boom_env_robust.py randomized boom env, power reward, substeps option (labs 08b–09)
+  boom_env_real.py   boom env on the real plant from the Lab 08a Simscape export (lab 10)
   0N_*.py            numbered lab scripts, with their CSV / PNG / log results next to them
   models/, tb/       trained models and TensorBoard logs (gitignored)
 paper/             Fig 1–3 (figs/) and Table 1 (table1.md, table1.tex), written by rl/09_paper_figures.py
@@ -97,6 +100,7 @@ Unless noted: 3 seeds (0, 1, 2), 100 unseen scenarios (`new100`), "misses" = sha
 | 09c3 | Feed-forward for the angle-dependent torque limit | Gain-scheduled variant (`sched`): τ_d alone 44 % → 2 % / 4 %, combined cases 43–51 % → 1–10 %; 15 ok, 14 degraded, 9 break over 38 rows ([rl/09c3_ff_torque_limit.md](rl/09c3_ff_torque_limit.md)). |
 | 09d / 09e | Residual SAC on top of `sched` vs `sched` vs 08b SAC | Goal not met: `sched` + residual misses 20.7–34.7 % on combined rows vs 1–10 % for `sched` alone, at 1.02–1.09× its energy ([rl/09e_comparison.md](rl/09e_comparison.md)). |
 | 09f | Kp retune of `sched` (no RL) | Kp 0.5 → 0.55 meets the goal: combined rows 1–3 % misses, E_mech 67.3–89.1 kJ (≤ 1.046× Kp=0.5), no single row worse. Tuned on the 20 original scenarios, checked on 100 unseen ([rl/09f_kp_retune.md](rl/09f_kp_retune.md)). |
+| 10 | `sched` on the real plant (Lab 08a Simscape export), Simscape check, retune | Python vs Simscape holding torque within ~2 %. Retuned Kp 0.25, Kd 0.5 (Lab 07 criterion): 0–1 % misses on 36 matched rows vs 0–3 % on the placeholder, E_mech ≈ 2× (front attachment). Old gains overshoot (≈ 1/300 of the placeholder damping). Breaks on `dump` under combined noise ([rl/10_real_plant.md](rl/10_real_plant.md), [docs/10_real_plant.md](docs/10_real_plant.md)). |
 
 ### Table 1
 
