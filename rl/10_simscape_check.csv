@@ -1,0 +1,19 @@
+check,quantity,python,simscape,unit,diff,diff_pct,note
+static,holding torque at -40 deg,211.97692604554922,208.29082307965976,kN m,3.686102965889461,1.7696905275945496,"Simscape boom-up log, tau - J dw/dt, mean of 206 samples in +-2.5 deg"
+static,holding torque at -30 deg,267.9393590587704,272.55076544124967,kN m,-4.611406382479288,-1.6919440218828923,"Simscape boom-up log, tau - J dw/dt, mean of 280 samples in +-2.5 deg"
+static,holding torque at -20 deg,312.4402164156172,314.14595094461845,kN m,-1.7057345290012336,-0.5429751756698407,"Simscape boom-up log, tau - J dw/dt, mean of 299 samples in +-2.5 deg"
+static,holding torque at -10 deg,351.86564539594843,345.2947419261095,kN m,6.570903469838925,1.9029839357487375,"Simscape boom-up log, tau - J dw/dt, mean of 243 samples in +-2.5 deg"
+static,holding torque at +0 deg,379.24688033024705,382.54434364970865,kN m,-3.297463319461599,-0.8619819830563349,"Simscape boom-up log, tau - J dw/dt, mean of 335 samples in +-2.5 deg"
+static,holding torque at +10 deg,394.0112928638479,398.12789098541253,kN m,-4.116598121564607,-1.0339888801499315,"Simscape boom-up log, tau - J dw/dt, mean of 345 samples in +-2.5 deg"
+static,holding torque at +20 deg,397.8065384313669,401.7418756024257,kN m,-3.9353371710587908,-0.979568576254994,"Simscape boom-up log, tau - J dw/dt, mean of 340 samples in +-2.5 deg"
+static,holding torque at +30 deg,388.9395714763915,391.8995412460234,kN m,-2.9599697696318685,-0.7552878883758846,"Simscape boom-up log, tau - J dw/dt, mean of 316 samples in +-2.5 deg"
+static,holding torque at +40 deg,368.8491648832174,365.0390106416117,kN m,3.8101542416056873,1.0437663182652068,"Simscape boom-up log, tau - J dw/dt, mean of 182 samples in +-2.5 deg"
+static,holding torque at +50 deg,338.01746933082717,339.86449191042004,kN m,-1.847022579592874,-0.5434585323140212,"Simscape boom-up log, tau - J dw/dt, mean of 247 samples in +-2.5 deg"
+static,"holding torque at theta_min (-47.2 deg), t = 0",167.11493300174033,167.11493300173998,kN m,3.410605131648481e-13,2.0408739484777043e-13,Simscape initial state; not independent (initial pressure set from the analytic formula)
+static,"holding torque at theta_max (+60.4 deg), t = 0",293.8936344006175,293.893634400616,kN m,1.4779288903810084e-12,5.028788368945737e-13,Simscape initial state; not independent (initial pressure set from the analytic formula)
+boom_up_time,"time to theta_max - 0.2 deg, no friction",5.552433392878762,5.619073655353518,s,-0.06664026247475618,-1.1859652775910015,Simscape: Lab 08a JSON boom_up_time_s
+boom_up_work,"signed work, no friction",665.309526436044,672.325394303753,kJ,-7.015867867708948,-1.0435226643453568,Simscape: rl/09b2_energy_check.csv _first sim_E_mech_signed_kJ
+boom_up_work,"absolute work, no friction",665.309526436044,679.768909294841,kJ,-14.459382858796971,-2.1271027052114557,Simscape: rl/09b2_energy_check.csv _first sim_E_mech_abs_kJ
+boom_up_time,"time to theta_max - 0.2 deg, friction",5.5528139628010855,5.616506864619853,s,-0.06369290181876774,-1.1340305167254296,Simscape: Lab 08a JSON boom_up_time_friction_s
+boom_up_work,"signed work, friction",669.0208412854502,672.686131621991,kJ,-3.6652903365408065,-0.5448737775674077,Simscape: rl/09b2_energy_check.csv _damped sim_E_mech_signed_kJ
+boom_up_work,"absolute work, friction",669.0208412854502,681.100722866212,kJ,-12.079881580761821,-1.7735822581316893,Simscape: rl/09b2_energy_check.csv _damped sim_E_mech_abs_kJ
