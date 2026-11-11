@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+message: "If you use this work, please cite it as below."
+title: "DX300 boom RL study: energy vs accuracy for SAC control of a hydraulic excavator boom"
+type: software
+authors:
+  - family-names: Ayyad
+    given-names: Ahmed
+    affiliation: "Istanbul Okan University"
+repository-code: "https://github.com/Ahmedayyadw/dx300-sim"
+keywords:
+  - reinforcement learning
+  - soft actor-critic
+  - hydraulic excavator
+  - energy efficiency
+  - digital twin
+  - simscape
+license: MIT
+# TODO: add preferred-citation for the ICEEE 2027 paper on publication
