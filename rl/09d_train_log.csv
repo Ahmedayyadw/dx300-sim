@@ -1,0 +1,4 @@
+config,w,seed,steps,train_s
+residual,0.3,1,200000,4136.4
+residual,0.3,2,200000,4141.6
+residual,0.3,0,200000,4165.3
