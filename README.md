@@ -6,7 +6,8 @@
 ![PyTorch](https://img.shields.io/badge/PyTorch-2.14-EE4C2C?logo=pytorch&logoColor=white)
 ![MATLAB Simscape](https://img.shields.io/badge/MATLAB-Simscape-orange)
 ![tests](https://img.shields.io/badge/tests-pytest-green)
-<!-- TODO: add Python version and license badges once chosen -->
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+<!-- TODO: add Python version badge -->
 
 Soft Actor-Critic (SAC, stable-baselines3) control of the boom of a Doosan DX300 hydraulic excavator, studying the trade-off between positioning accuracy and actuator energy. The plant is a single boom joint in simulation. This repo is Stage 1 of the master's thesis "AI-Based Fault Detection and Energy Management of a Hydraulic Excavator Using a Digital Twin" (Okan University).
 
@@ -89,6 +90,13 @@ Unless noted: 3 seeds (0, 1, 2), 100 unseen scenarios (`new100`), "misses" = sha
 | 08c | Integrator check | The Inertia ×0.38 chattering is an explicit-Euler artifact: h·b/J = 0.05 × 6e5 / (0.38 × 8e4) ≈ 0.99 at one step per 0.05 s. 10 substeps fix it (Plain SAC w=0.1 misses 20.7 % → 4.0 %). All 08b–09 results use 10 substeps. |
 | 08d | Eval at the 08a inertia with front attachment (J ≈ 262k kg m²) and 08a torque limit τ_up(θ) | Plain SAC w=0.1: 8.0 % misses at 209.5 kJ; Residual SAC w=0.1: 15.0 % at 190.6 kJ; PID: 100 %; PID + I: 72 %. Eval only, no retraining. |
 | 09 | Paper figures | Fig 1 energy vs robustness, Fig 2 robustness per variant, Fig 3 payload trajectory, Table 1, in [paper/](paper/). 3 seeds, 10 integration substeps. |
+| 09b | Hydraulic energy model and energy balance for the 07 PID | Baseline: E_pump 80.3 kJ vs E_mech 68.5 kJ; balance residual 0.3 % of E_pump. dp_valve = 20 bar and η_pump = 0.85 are assumed, not DX300 data ([rl/09b_energy_balance.csv](rl/09b_energy_balance.csv)). |
+| 09b2 | Python energy model vs Simscape hydraulics | Boom-up agrees within 1.4 % only by cancellation; like for like Python is 13.8 % low (boom-up) and 54.9 % low (boom-down). No (dp_valve, η_pump) pair fits both moves ([rl/09b2_energy_check.md](rl/09b2_energy_check.md)). |
+| 09c | Online payload estimator + payload-aware PID | Payload ×1.2 misses 100 % → 1 %, Mass ×0.42 100 % → 1 %, baseline unchanged (1 %, 68.5 kJ) ([rl/09c_comparison.md](rl/09c_comparison.md), derivation in [docs/09c_payload_estimator.md](docs/09c_payload_estimator.md)). |
+| 09c2 | Stress test of the payload-aware PID | Breaks under the angle-dependent torque limit τ_d (44 % / 47 % baseline / payload) because the feed-forward uses the nominal limit; 1° sensor noise breaks it under payload (6 %); wrong J holds ([rl/09c2_stress.md](rl/09c2_stress.md)). |
+| 09c3 | Feed-forward for the angle-dependent torque limit | Gain-scheduled variant (`sched`): τ_d alone 44 % → 2 % / 4 %, combined cases 43–51 % → 1–10 %; 15 ok, 14 degraded, 9 break over 38 rows ([rl/09c3_ff_torque_limit.md](rl/09c3_ff_torque_limit.md)). |
+| 09d / 09e | Residual SAC on top of `sched` vs `sched` vs 08b SAC | Goal not met: `sched` + residual misses 20.7–34.7 % on combined rows vs 1–10 % for `sched` alone, at 1.02–1.09× its energy ([rl/09e_comparison.md](rl/09e_comparison.md)). |
+| 09f | Kp retune of `sched` (no RL) | Kp 0.5 → 0.55 meets the goal: combined rows 1–3 % misses, E_mech 67.3–89.1 kJ (≤ 1.046× Kp=0.5), no single row worse. Tuned on the 20 original scenarios, checked on 100 unseen ([rl/09f_kp_retune.md](rl/09f_kp_retune.md)). |
 
 ### Table 1
 
@@ -148,4 +156,4 @@ Ahmed Ayyad, Automotive Mechatronics M.Sc. (thesis track), Istanbul Okan Univers
 
 ## License
 
-[TODO: choose license]
+[MIT](LICENSE)
