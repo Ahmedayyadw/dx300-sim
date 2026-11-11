@@ -1,0 +1,191 @@
+[Warning: Unable to locate a personal folder for $documents/MATLAB.] 
+built dx300_boom_hyd_09b2_explore.slx (copy of lab08a/dx300_boom_hyd_damped.slx + Q_pump_cmd logging + move selector, spool ramp 0.001 s)
+move  frac  ramp_s  area_mm2  t_move_s  p_cap min/max bar  p_rod min/max bar  cav_cap  cav_rod  osc_amp_bar  relief_frac  Qcyl_peak_Lmin  E_pump  E_relief  E_valve  E_mech_signed  W_pos kJ
+[238003:238003:1111/123747.223832:ERROR:gpu/command_buffer/service/gl_utils.cc:391] [.WebGL-0x71f2d409c7e0]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+[238003:238003:1111/123747.370203:ERROR:gpu/command_buffer/service/gl_utils.cc:391] [.WebGL-0x71f2d409c7e0]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+[238003:238003:1111/123747.680300:ERROR:gpu/command_buffer/service/gl_utils.cc:391] [.WebGL-0x71f2d409c7e0]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+[238003:238003:1111/123747.708637:ERROR:gpu/command_buffer/service/gl_utils.cc:391] [.WebGL-0x71f2d409c7e0]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)
+[Warning: Unconnected line found in 'dx300_boom_hyd_09b2_explore' (outside of
+current view)] 
+[> In lab09b2_explore (line 21)] 
+[Warning: Unconnected line found in 'dx300_boom_hyd_09b2_explore' (outside of
+current view)] 
+[> In lab09b2_explore (line 21)] 
+[Warning: Unconnected line found in 'dx300_boom_hyd_09b2_explore' (outside of
+current view)] 
+[> In lab09b2_explore (line 21)] 
+[Warning: Unconnected line found in 'dx300_boom_hyd_09b2_explore' (outside of
+current view)] 
+[> In lab09b2_explore (line 21)] 
+up    1.00   0.001     150.0      5.61     -0.8 / 330.8       0.00 /  18.6      0.044    0.000        168.2        0.149             697   890.9      48.5    140.7          672.3     676.5
+      log points 6000, log t0 0.000 s
+[Warning: Unconnected line found in 'dx300_boom_hyd_09b2_explore' (outside of
+current view)] 
+[> In lab09b2_explore (line 21)] 
+[Warning: Unconnected line found in 'dx300_boom_hyd_09b2_explore' (outside of
+current view)] 
+[> In lab09b2_explore (line 21)] 
+[Warning: Unconnected line found in 'dx300_boom_hyd_09b2_explore' (outside of
+current view)] 
+[> In lab09b2_explore (line 21)] 
+[Warning: Unconnected line found in 'dx300_boom_hyd_09b2_explore' (outside of
+current view)] 
+[> In lab09b2_explore (line 21)] 
+Warning: maxDynamicUniformBuffersPerPipelineLayout artificially reduced from 500000 to 16 to fit dynamic offset allocation limit.
+Warning: maxDynamicStorageBuffersPerPipelineLayout artificially reduced from 500000 to 16 to fit dynamic offset allocation limit.
+up    1.00   1.000     150.0      6.16     -0.7 / 315.3       0.00 /  18.7      0.031    0.000        166.4        0.226             696  1047.0     197.0    147.3          672.0     676.0
+      log points 2832319, log t0 0.000 s
+[Warning: Unconnected line found in 'dx300_boom_hyd_09b2_explore' (outside of
+current view)] 
+[> In lab09b2_explore (line 21)] 
+[Warning: Unconnected line found in 'dx300_boom_hyd_09b2_explore' (outside of
+current view)] 
+[> In lab09b2_explore (line 21)] 
+[Warning: Unconnected line found in 'dx300_boom_hyd_09b2_explore' (outside of
+current view)] 
+[> In lab09b2_explore (line 21)] 
+[Warning: Unconnected line found in 'dx300_boom_hyd_09b2_explore' (outside of
+current view)] 
+[> In lab09b2_explore (line 21)] 
+up    1.00   2.000     150.0      6.70      0.4 / 303.9      -0.00 /  35.5      0.000    0.000        154.9        0.283             697  1222.1     351.9    170.8          669.0     671.5
+      log points 1926329, log t0 0.000 s
+[Warning: Unconnected line found in 'dx300_boom_hyd_09b2_explore' (outside of
+current view)] 
+[> In lab09b2_explore (line 21)] 
+[Warning: Unconnected line found in 'dx300_boom_hyd_09b2_explore' (outside of
+current view)] 
+[> In lab09b2_explore (line 21)] 
+[Warning: Unconnected line found in 'dx300_boom_hyd_09b2_explore' (outside of
+current view)] 
+[> In lab09b2_explore (line 21)] 
+[Warning: Unconnected line found in 'dx300_boom_hyd_09b2_explore' (outside of
+current view)] 
+[> In lab09b2_explore (line 21)] 
+up    1.00   4.000     150.0      7.91     -0.5 / 296.0      -0.02 /  47.6      0.000    0.000        145.8        0.368             600  1606.0     671.7    225.7          661.5     661.7
+      log points 2598652, log t0 0.000 s
+[Warning: Unconnected line found in 'dx300_boom_hyd_09b2_explore' (outside of
+current view)] 
+[> In lab09b2_explore (line 21)] 
+[Warning: Unconnected line found in 'dx300_boom_hyd_09b2_explore' (outside of
+current view)] 
+[> In lab09b2_explore (line 21)] 
+[Warning: Unconnected line found in 'dx300_boom_hyd_09b2_explore' (outside of
+current view)] 
+[> In lab09b2_explore (line 21)] 
+[Warning: Unconnected line found in 'dx300_boom_hyd_09b2_explore' (outside of
+current view)] 
+[> In lab09b2_explore (line 21)] 
+down  1.00   0.001     150.0      2.86      3.4 / 215.7      -0.99 / 330.8      0.000    0.813         41.9        0.147             686   197.0      62.6     71.9         -573.6      39.5
+      log points 7859, log t0 0.000 s
+[Warning: Unconnected line found in 'dx300_boom_hyd_09b2_explore' (outside of
+current view)] 
+[> In lab09b2_explore (line 21)] 
+[Warning: Unconnected line found in 'dx300_boom_hyd_09b2_explore' (outside of
+current view)] 
+[> In lab09b2_explore (line 21)] 
+[Warning: Unconnected line found in 'dx300_boom_hyd_09b2_explore' (outside of
+current view)] 
+[> In lab09b2_explore (line 21)] 
+[Warning: Unconnected line found in 'dx300_boom_hyd_09b2_explore' (outside of
+current view)] 
+[> In lab09b2_explore (line 21)] 
+down  0.90   0.001     120.0      3.19      5.9 / 251.3      -0.95 / 330.8      0.000    0.413         42.8        0.140             599   389.9      64.6    119.8         -551.5      30.9
+      log points 7585, log t0 0.000 s
+[Warning: Unconnected line found in 'dx300_boom_hyd_09b2_explore' (outside of
+current view)] 
+[> In lab09b2_explore (line 21)] 
+[Warning: Unconnected line found in 'dx300_boom_hyd_09b2_explore' (outside of
+current view)] 
+[> In lab09b2_explore (line 21)] 
+[Warning: Unconnected line found in 'dx300_boom_hyd_09b2_explore' (outside of
+current view)] 
+[> In lab09b2_explore (line 21)] 
+[Warning: Unconnected line found in 'dx300_boom_hyd_09b2_explore' (outside of
+current view)] 
+[> In lab09b2_explore (line 21)] 
+down  0.85   0.001     105.0      3.20      8.3 / 284.8      -0.83 / 330.8      0.000    0.110         51.6        0.261             571   635.1      72.2    152.1         -556.1      25.7
+      log points 7747, log t0 0.000 s
+[Warning: Unconnected line found in 'dx300_boom_hyd_09b2_explore' (outside of
+current view)] 
+[> In lab09b2_explore (line 21)] 
+[Warning: Unconnected line found in 'dx300_boom_hyd_09b2_explore' (outside of
+current view)] 
+[> In lab09b2_explore (line 21)] 
+[Warning: Unconnected line found in 'dx300_boom_hyd_09b2_explore' (outside of
+current view)] 
+[> In lab09b2_explore (line 21)] 
+[Warning: Unconnected line found in 'dx300_boom_hyd_09b2_explore' (outside of
+current view)] 
+[> In lab09b2_explore (line 21)] 
+down  0.80   0.001      90.0      3.41     12.7 / 334.7       0.00 / 330.8      0.000    0.000         51.8        0.894             538   888.4     134.1    178.9         -573.0      20.8
+      log points 7988, log t0 0.000 s
+[Warning: Unconnected line found in 'dx300_boom_hyd_09b2_explore' (outside of
+current view)] 
+[> In lab09b2_explore (line 21)] 
+[Warning: Unconnected line found in 'dx300_boom_hyd_09b2_explore' (outside of
+current view)] 
+[> In lab09b2_explore (line 21)] 
+[Warning: Unconnected line found in 'dx300_boom_hyd_09b2_explore' (outside of
+current view)] 
+[> In lab09b2_explore (line 21)] 
+[Warning: Unconnected line found in 'dx300_boom_hyd_09b2_explore' (outside of
+current view)] 
+[> In lab09b2_explore (line 21)] 
+down  0.75   0.001      75.0      3.98     20.7 / 381.6       0.00 / 330.8      0.000    0.000         66.3        1.000             477  1081.0     288.7    186.4         -588.6      16.1
+      log points 7332, log t0 0.000 s
+[Warning: Unconnected line found in 'dx300_boom_hyd_09b2_explore' (outside of
+current view)] 
+[> In lab09b2_explore (line 21)] 
+[Warning: Unconnected line found in 'dx300_boom_hyd_09b2_explore' (outside of
+current view)] 
+[> In lab09b2_explore (line 21)] 
+[Warning: Unconnected line found in 'dx300_boom_hyd_09b2_explore' (outside of
+current view)] 
+[> In lab09b2_explore (line 21)] 
+[Warning: Unconnected line found in 'dx300_boom_hyd_09b2_explore' (outside of
+current view)] 
+[> In lab09b2_explore (line 21)] 
+down  0.70   0.001      60.0      4.89     35.3 / 389.7       0.00 / 330.8      0.000    0.000         52.9        1.000             399  1330.4     537.9    189.0         -602.3      11.5
+      log points 6947, log t0 0.000 s
+[Warning: Unconnected line found in 'dx300_boom_hyd_09b2_explore' (outside of
+current view)] 
+[> In lab09b2_explore (line 21)] 
+[Warning: Unconnected line found in 'dx300_boom_hyd_09b2_explore' (outside of
+current view)] 
+[> In lab09b2_explore (line 21)] 
+[Warning: Unconnected line found in 'dx300_boom_hyd_09b2_explore' (outside of
+current view)] 
+[> In lab09b2_explore (line 21)] 
+[Warning: Unconnected line found in 'dx300_boom_hyd_09b2_explore' (outside of
+current view)] 
+[> In lab09b2_explore (line 21)] 
+down  0.85   1.000     105.0      3.77     58.7 / 284.2      -0.82 / 329.5      0.000    0.089         96.6        0.378             571   793.3     227.7    151.8         -555.9      21.5
+      log points 176761, log t0 0.000 s
+[Warning: Unconnected line found in 'dx300_boom_hyd_09b2_explore' (outside of
+current view)] 
+[> In lab09b2_explore (line 21)] 
+[Warning: Unconnected line found in 'dx300_boom_hyd_09b2_explore' (outside of
+current view)] 
+[> In lab09b2_explore (line 21)] 
+[Warning: Unconnected line found in 'dx300_boom_hyd_09b2_explore' (outside of
+current view)] 
+[> In lab09b2_explore (line 21)] 
+[Warning: Unconnected line found in 'dx300_boom_hyd_09b2_explore' (outside of
+current view)] 
+[> In lab09b2_explore (line 21)] 
+down  0.80   1.000      90.0      3.97     58.7 / 334.4       0.00 / 329.5      0.000    0.000        105.9        0.911             537  1043.6     288.2    178.5         -572.8      17.3
+      log points 152399, log t0 0.000 s
+[Warning: Unconnected line found in 'dx300_boom_hyd_09b2_explore' (outside of
+current view)] 
+[> In lab09b2_explore (line 21)] 
+[Warning: Unconnected line found in 'dx300_boom_hyd_09b2_explore' (outside of
+current view)] 
+[> In lab09b2_explore (line 21)] 
+[Warning: Unconnected line found in 'dx300_boom_hyd_09b2_explore' (outside of
+current view)] 
+[> In lab09b2_explore (line 21)] 
+[Warning: Unconnected line found in 'dx300_boom_hyd_09b2_explore' (outside of
+current view)] 
+[> In lab09b2_explore (line 21)] 
+down  0.75   1.000      75.0      4.53     60.8 / 379.6       0.00 / 329.5      0.000    0.000        113.2        1.000             475  1232.5     440.9    185.7         -588.4      13.1
+      log points 127689, log t0 0.000 s
