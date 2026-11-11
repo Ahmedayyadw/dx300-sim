@@ -1,0 +1,162 @@
+[Warning: Unable to locate a personal folder for $documents/MATLAB.] 
+built dx300_boom_hyd_09b2.slx (copy of lab08a/dx300_boom_hyd.slx + Q_pump_cmd logging + move selector)
+[188510:188510:1111/080108.903512:ERROR:gpu/command_buffer/service/gl_utils.cc:391] [.WebGL-0x7e005827eb60]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+[188510:188510:1111/080109.068037:ERROR:gpu/command_buffer/service/gl_utils.cc:391] [.WebGL-0x7e005827eb60]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+[188510:188510:1111/080109.386499:ERROR:gpu/command_buffer/service/gl_utils.cc:391] [.WebGL-0x7e005827eb60]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+[188510:188510:1111/080109.590372:ERROR:gpu/command_buffer/service/gl_utils.cc:391] [.WebGL-0x7e005827eb60]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)
+[Warning: Unconnected line found in 'dx300_boom_hyd_09b2' (outside of current
+view)] 
+[> In probe_09b2 (line 8)] 
+[Warning: Unconnected line found in 'dx300_boom_hyd_09b2' (outside of current
+view)] 
+[> In probe_09b2 (line 8)] 
+[Warning: Unconnected line found in 'dx300_boom_hyd_09b2' (outside of current
+view)] 
+[> In probe_09b2 (line 8)] 
+[Warning: Unconnected line found in 'dx300_boom_hyd_09b2' (outside of current
+view)] 
+[> In probe_09b2 (line 8)] 
+sim wall time 17.0 s
+logsout: F, p_cap, p_rod, p_pump, Q_pump_cmd, q, tau, v_rod, w
+--- simlog.Pump ---
+  Pump.A.p [MPa] n=4280  first 0.1013  max 0.1013  min 0.1013
+  Pump.B.p [MPa] n=4280  first 0.1013  max 33.33  min 0.1013
+Pump.V [m^3/s] n=4280  first 0  max 0.008235  min 0
+Pump.mdot_A [kg/s] n=4280  first 0  max 7.324  min 0
+Pump.mdot_B [kg/s] n=4280  first -0  max -0  min -7.324
+Pump.power [kW] n=4280  first -0  max 273.6  min -0
+Pump.q_A [m^3/s] n=4280  first 0  max 0.008461  min 0
+Pump.q_B [m^3/s] n=4280  first -0  max -0  min -0.008235
+Pump.rho_A [kg/m^3] n=4280  first 865.7  max 865.7  min 865.7
+Pump.rho_B [kg/m^3] n=4280  first 865.7  max 889.5  min 865.7
+--- simlog.Relief ---
+  Relief.A.p [MPa] n=4280  first 0.1013  max 33.33  min 0.1013
+  Relief.B.p [MPa] n=4280  first 0.1013  max 0.1013  min 0.1013
+Relief.mdot_A [kg/s] n=4280  first 0  max 21.32  min -1.307e-05
+Relief.mdot_B [kg/s] n=4280  first -0  max 1.307e-05  min -21.32
+Relief.p_diff [bar] n=4280  first 0  max 332.3  min 0
+Relief.q_A [m^3/s] n=4280  first 0  max 0.02397  min -1.469e-08
+Relief.q_B [m^3/s] n=4280  first -0  max 1.509e-08  min -0.02463
+Relief.rho_A [kg/m^3] n=4280  first 865.7  max 889.5  min 865.7
+Relief.rho_B [kg/m^3] n=4280  first 865.7  max 865.7  min 865.7
+Relief.valve_area [m^2] n=4280  first 1e-10  max 0.0001379  min 1e-10
+--- simlog.DCV ---
+  DCV.A.p [MPa] n=4280  first 0.1013  max 33.33  min 0.1013
+  DCV.B.p [MPa] n=4280  first 0.1013  max 0.1013  min 0.1013
+  DCV.P.p [MPa] n=4280  first 9.572  max 45.24  min 0.01952
+DCV.S [m] n=4280  first 0  max 0.005  min 0
+  DCV.T.p [MPa] n=4280  first 0.1013  max 1.964  min 0.0002966
+DCV.rho_A [kg/m^3] n=4280  first 865.7  max 889.5  min 865.7
+DCV.rho_B [kg/m^3] n=4280  first 865.7  max 865.7  min 865.7
+DCV.rho_P [kg/m^3] n=4280  first 875.5  max 896.6  min 847.8
+DCV.rho_T [kg/m^3] n=4280  first 865.7  max 870.9  min 320.2
+    DCV.valve_4_way.A.p [MPa] n=4280  first 0.1013  max 33.33  min 0.1013
+    DCV.valve_4_way.B.p [MPa] n=4280  first 0.1013  max 0.1013  min 0.1013
+    DCV.valve_4_way.P.p [MPa] n=4280  first 9.572  max 45.24  min 0.01952
+  DCV.valve_4_way.S [m] n=4280  first 0  max 0.005  min 0
+    DCV.valve_4_way.T.p [MPa] n=4280  first 0.1013  max 1.964  min 0.0002966
+    DCV.valve_4_way.orifice_AT.S [m] n=4280  first -0.0025  max -0.0025  min -0.0075
+    DCV.valve_4_way.orifice_AT.mdot_A [kg/s] n=4280  first 0  max 4.453e-06  min 0
+    DCV.valve_4_way.orifice_AT.mdot_B [kg/s] n=4280  first -0  max -0  min -4.453e-06
+    DCV.valve_4_way.orifice_AT.orifice_area [m^2] n=4280  first 1e-10  max 1e-10  min 1e-10
+    DCV.valve_4_way.orifice_AT.p_diff [MPa] n=4280  first 0  max 33.33  min 0
+    DCV.valve_4_way.orifice_AT.q_A [m^3/s] n=4280  first 0  max 5.006e-09  min 0
+    DCV.valve_4_way.orifice_AT.q_B [m^3/s] n=4280  first -0  max -0  min -1.386e-08
+    DCV.valve_4_way.orifice_AT.rho_A [kg/m^3] n=4280  first 865.7  max 889.5  min 865.7
+    DCV.valve_4_way.orifice_AT.rho_B [kg/m^3] n=4280  first 865.7  max 870.9  min 320.2
+    DCV.valve_4_way.orifice_BT.S [m] n=4280  first -0.0025  max 0.0025  min -0.0025
+    DCV.valve_4_way.orifice_BT.mdot_A [kg/s] n=4280  first 0  max 1.212  min -5.459
+    DCV.valve_4_way.orifice_BT.mdot_B [kg/s] n=4280  first -0  max 5.459  min -1.212
+    DCV.valve_4_way.orifice_BT.orifice_area [m^2] n=4280  first 1e-10  max 0.00015  min 1e-10
+    DCV.valve_4_way.orifice_BT.p_diff [MPa] n=4280  first 0  max 0.101  min -1.862
+    DCV.valve_4_way.orifice_BT.q_A [m^3/s] n=4280  first 0  max 0.001401  min -0.006307
+    DCV.valve_4_way.orifice_BT.q_B [m^3/s] n=4280  first -0  max 0.006269  min -0.003281
+    DCV.valve_4_way.orifice_BT.rho_A [kg/m^3] n=4280  first 865.7  max 865.7  min 865.7
+    DCV.valve_4_way.orifice_BT.rho_B [kg/m^3] n=4280  first 865.7  max 870.9  min 320.2
+    DCV.valve_4_way.orifice_PA.S [m] n=4280  first -0.0025  max 0.0025  min -0.0025
+    DCV.valve_4_way.orifice_PA.mdot_A [kg/s] n=4280  first 1.269e-06  max 14  min -8.083
+    DCV.valve_4_way.orifice_PA.mdot_B [kg/s] n=4280  first -1.269e-06  max 8.083  min -14
+    DCV.valve_4_way.orifice_PA.orifice_area [m^2] n=4280  first 1e-10  max 0.00015  min 1e-10
+    DCV.valve_4_way.orifice_PA.p_diff [MPa] n=4280  first 9.471  max 11.9  min -23.61
+    DCV.valve_4_way.orifice_PA.q_A [m^3/s] n=4280  first 1.449e-09  max 0.01561  min -0.009165
+    DCV.valve_4_way.orifice_PA.q_B [m^3/s] n=4280  first -1.465e-09  max 0.00909  min -0.01574
+    DCV.valve_4_way.orifice_PA.rho_A [kg/m^3] n=4280  first 875.5  max 896.6  min 847.8
+    DCV.valve_4_way.orifice_PA.rho_B [kg/m^3] n=4280  first 865.7  max 889.5  min 865.7
+    DCV.valve_4_way.orifice_PB.S [m] n=4280  first -0.0025  max -0.0025  min -0.0075
+    DCV.valve_4_way.orifice_PB.mdot_A [kg/s] n=4280  first 1.269e-06  max 6.028e-06  min -1.096e-08
+    DCV.valve_4_way.orifice_PB.mdot_B [kg/s] n=4280  first -1.269e-06  max 1.096e-08  min -6.028e-06
+    DCV.valve_4_way.orifice_PB.orifice_area [m^2] n=4280  first 1e-10  max 1e-10  min 1e-10
+    DCV.valve_4_way.orifice_PB.p_diff [MPa] n=4280  first 9.471  max 45.13  min -0.0818
+    DCV.valve_4_way.orifice_PB.q_A [m^3/s] n=4280  first 1.449e-09  max 6.723e-09  min -1.293e-11
+    DCV.valve_4_way.orifice_PB.q_B [m^3/s] n=4280  first -1.465e-09  max 1.266e-11  min -6.963e-09
+    DCV.valve_4_way.orifice_PB.rho_A [kg/m^3] n=4280  first 875.5  max 896.6  min 847.8
+    DCV.valve_4_way.orifice_PB.rho_B [kg/m^3] n=4280  first 865.7  max 865.7  min 865.7
+  DCV.valve_4_way.rho_A [kg/m^3] n=4280  first 865.7  max 889.5  min 865.7
+  DCV.valve_4_way.rho_B [kg/m^3] n=4280  first 865.7  max 865.7  min 865.7
+  DCV.valve_4_way.rho_P [kg/m^3] n=4280  first 875.5  max 896.6  min 847.8
+  DCV.valve_4_way.rho_T [kg/m^3] n=4280  first 865.7  max 870.9  min 320.2
+--- simlog.Cyl_eq ---
+  Cyl_eq.A.p [MPa] n=4280  first 9.572  max 45.24  min 0.01952
+  Cyl_eq.B.p [MPa] n=4280  first 0.1013  max 1.964  min 0.0002966
+  Cyl_eq.C.v [m/s] n=4280  first 0  max 0  min 0
+  Cyl_eq.R.v [m/s] n=4280  first 0  max 0.3778  min -0.5407
+    Cyl_eq.chamber_A.A.p [MPa] n=4280  first 9.572  max 45.24  min 0.01952
+    Cyl_eq.chamber_A.C.v [m/s] n=4280  first 0  max 0  min 0
+    Cyl_eq.chamber_A.R.v [m/s] n=4280  first 0  max 0.3778  min -0.5407
+  Cyl_eq.chamber_A.beta_I [MPa] n=4280  first 1488  max 1499  min 0.7679
+  Cyl_eq.chamber_A.interface_displacement [m] n=4280  first 0  max 1.454  min -5.908e-08
+  Cyl_eq.chamber_A.interface_force [N] n=4280  first -2.916e+05  max 2518  min -1.39e+06
+  Cyl_eq.chamber_A.interface_velocity [m/s] n=4280  first 0  max 0.3778  min -0.5407
+  Cyl_eq.chamber_A.mdot_A [kg/s] n=4280  first -2.537e-06  max 8.083  min -14
+  Cyl_eq.chamber_A.p_I [Pa] n=4280  first 9.572e+06  max 4.524e+07  min 1.952e+04
+  Cyl_eq.chamber_A.rho_A [kg/m^3] n=4280  first 875.5  max 896.6  min 847.8
+  Cyl_eq.chamber_A.rho_I [kg/m^3] n=4280  first 875.5  max 896.6  min 847.8
+  Cyl_eq.chamber_A.volume [m^3] n=4280  first 0.001  max 0.04577  min 0.001
+    Cyl_eq.chamber_B.A.p [MPa] n=4280  first 0.1013  max 1.964  min 0.0002966
+    Cyl_eq.chamber_B.C.v [m/s] n=4280  first 0  max 0  min 0
+    Cyl_eq.chamber_B.R.v [m/s] n=4280  first 0  max 0.3778  min -0.5407
+  Cyl_eq.chamber_B.beta_I [MPa] n=4280  first 20  max 1252  min 0.0004693
+  Cyl_eq.chamber_B.interface_displacement [m] n=4280  first -1.45  max 0.004052  min -1.45
+  Cyl_eq.chamber_B.interface_force [N] n=4280  first 0  max 3.093e+04  min -1678
+  Cyl_eq.chamber_B.interface_velocity [m/s] n=4280  first 0  max 0.3778  min -0.5407
+  Cyl_eq.chamber_B.mdot_A [kg/s] n=4280  first 0  max 1.212  min -5.459
+  Cyl_eq.chamber_B.p_I [MPa] n=4280  first 0.1013  max 1.964  min 0.0002966
+  Cyl_eq.chamber_B.rho_A [kg/m^3] n=4280  first 865.7  max 870.9  min 320.2
+  Cyl_eq.chamber_B.rho_I [kg/m^3] n=4280  first 865.7  max 870.9  min 320.2
+  Cyl_eq.chamber_B.volume [m^3] n=4280  first 0.02509  max 0.02509  min 0.0009327
+    Cyl_eq.hard_stop.C.v [m/s] n=4280  first 0  max 0  min 0
+    Cyl_eq.hard_stop.R.v [m/s] n=4280  first 0  max 0.3778  min -0.5407
+  Cyl_eq.hard_stop.f [N] n=4280  first 0  max 4.052e+07  min -0.0006183
+  Cyl_eq.hard_stop.v [m/s] n=4280  first 0  max 0.3778  min -0.5407
+  Cyl_eq.hard_stop.x [m] n=4280  first 0  max 1.454  min -5.908e-08
+Cyl_eq.p_out [m] n=4280  first 0  max 1.454  min -5.908e-08
+Cyl_eq.rho_A [kg/m^3] n=4280  first 875.5  max 896.6  min 847.8
+Cyl_eq.rho_B [kg/m^3] n=4280  first 865.7  max 870.9  min 320.2
+--- simlog.V_pumpline ---
+  V_pumpline.A.p [MPa] n=4280  first 0.1013  max 33.33  min 0.1013
+V_pumpline.beta_I [MPa] n=4280  first 20  max 1499  min 20
+V_pumpline.mdot_A [kg/s] n=4280  first 1.269e-06  max 1.917  min -0.762
+V_pumpline.p_I [MPa] n=4280  first 0.1013  max 33.33  min 0.1013
+V_pumpline.rho_A [kg/m^3] n=4280  first 865.7  max 889.5  min 865.7
+V_pumpline.rho_I [kg/m^3] n=4280  first 865.7  max 889.5  min 865.7
+--- simlog.p_pump ---
+  p_pump.A.p [MPa] n=4280  first 0.1013  max 33.33  min 0.1013
+  p_pump.B.p [MPa] n=4280  first 0.1013  max 0.1013  min 0.1013
+p_pump.P [Pa] n=4280  first -0  max 3.323e+07  min -0
+p_pump.Pa [Pa] n=4280  first 1.013e+05  max 3.333e+07  min 1.013e+05
+p_pump.Pg [Pa] n=4280  first -0  max 3.323e+07  min -0
+--- simlog.p_rod ---
+  p_rod.A.p [MPa] n=4280  first 0.1013  max 1.964  min 0.0002966
+  p_rod.B.p [MPa] n=4280  first 0.1013  max 0.1013  min 0.1013
+p_rod.P [Pa] n=4280  first -0  max 1.862e+06  min -1.01e+05
+p_rod.Pa [Pa] n=4280  first 1.013e+05  max 1.964e+06  min 296.6
+p_rod.Pg [Pa] n=4280  first -0  max 1.862e+06  min -1.01e+05
+--- simlog.F_sens ---
+  F_sens.C.v [m/s] n=4280  first 0  max 0.3778  min -0.5407
+F_sens.F [N] n=4280  first 2.916e+05  max 1.391e+06  min -3.972e+07
+  F_sens.R.v [m/s] n=4280  first 0  max 0.3778  min -0.5407
+F_sens.f [N] n=4280  first 2.916e+05  max 1.391e+06  min -3.972e+07
+--- simlog.Oil ---
+  Oil.A.p [MPa] n=4280  first 0.1013  max 33.33  min 0.1013
+p_rod at t=0.5: 2.4 Pa   p_pump at t=0.9: 33079996.7 Pa   p_cap at t=0: 9470511.1 Pa (p0_cap abs = 9571836.1)
+stage1_kin: th -47.20..60.40 deg, L 2.0097..3.4599 m (L(end)-L(1) = 1.4502), n = 500

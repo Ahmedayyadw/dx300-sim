@@ -1,0 +1,45 @@
+[Warning: Unable to locate a personal folder for $documents/MATLAB.] 
+built dx300_boom_hyd_09b2_damped.slx (copy of lab08a/dx300_boom_hyd_damped.slx + Q_pump_cmd logging + move selector, spool ramp 0 s)
+[244990:244990:1111/133113.938648:ERROR:gpu/command_buffer/service/gl_utils.cc:391] [.WebGL-0x70ea90281a20]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+[244990:244990:1111/133114.060137:ERROR:gpu/command_buffer/service/gl_utils.cc:391] [.WebGL-0x70ea90281a20]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+[244990:244990:1111/133114.288478:ERROR:gpu/command_buffer/service/gl_utils.cc:391] [.WebGL-0x70ea90281a20]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+[244990:244990:1111/133114.382050:ERROR:gpu/command_buffer/service/gl_utils.cc:391] [.WebGL-0x70ea90281a20]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)
+[Warning: Unconnected line found in 'dx300_boom_hyd_09b2_damped' (outside of
+current view)] 
+[> In lab09b2_run (line 28)] 
+[Warning: Unconnected line found in 'dx300_boom_hyd_09b2_damped' (outside of
+current view)] 
+[> In lab09b2_run (line 28)] 
+[Warning: Unconnected line found in 'dx300_boom_hyd_09b2_damped' (outside of
+current view)] 
+[> In lab09b2_run (line 28)] 
+[Warning: Unconnected line found in 'dx300_boom_hyd_09b2_damped' (outside of
+current view)] 
+[> In lab09b2_run (line 28)] 
+=== up_damped (spool +100 % of dS_max, ramp 0 s), sim wall time 14.4 s ===
+    move    spool_frac    t_reach_s    t_move_s    theta0_deg    theta_reach_deg    E_pump_kJ    E_relief_kJ    E_cyl_in_kJ    E_cyl_out_kJ    E_cyl_net_kJ    E_mech_kJ    E_mech_abs_kJ    W_pos_kJ    W_neg_kJ    E_Fv_kJ    loss_pump_to_cyl_kJ    loss_supply_valve_kJ    loss_cyl_to_mech_kJ    vol_cap_m3    vol_rod_m3    vol_pump_m3    vol_relief_m3    vol_kin_m3    p_pump_mean_bar    p_pump_max_bar    p_cap_mean_bar    p_rod_mean_bar    p_rod_min_bar    p_cap_min_bar    v_mean_mps    v_peak_mps    relief_open_frac    E_pump_standby_kJ    Q_cmd_max_err    cav_cap_frac    cav_rod_frac    p_cap_max_bar    Q_cyl_peak_Lmin
+    ____    __________    _________    ________    __________    _______________    _________    ___________    ___________    ____________    ____________    _________    _____________    ________    ________    _______    ___________________    ____________________    ___________________    __________    __________    ___________    _____________    __________    _______________    ______________    ______________    ______________    _____________    _____________    __________    __________    ________________    _________________    _____________    ____________    ____________    _____________    _______________
+
+    "up"        1           6.615       5.615        -47.2            60.33          891.08        48.275         702.04          25.571          676.47        672.69          681.1         676.89      4.2073     672.69           189.04                  140.77                 3.7824            0.044928      0.02394        0.04623        0.0014608       0.04463          192.75             330.8             161.61            9.3353         2.7101e-05        -0.81414        0.25817       0.37701          0.14789              243.51           8.2334e-05        0.044006           0              330.8            696.44     
+
+wrote export/simscape_up_damped.csv  (7116 rows, 0.001 s grid)
+[Warning: Unconnected line found in 'dx300_boom_hyd_09b2_damped' (outside of
+current view)] 
+[> In lab09b2_run (line 28)] 
+[Warning: Unconnected line found in 'dx300_boom_hyd_09b2_damped' (outside of
+current view)] 
+[> In lab09b2_run (line 28)] 
+[Warning: Unconnected line found in 'dx300_boom_hyd_09b2_damped' (outside of
+current view)] 
+[> In lab09b2_run (line 28)] 
+[Warning: Unconnected line found in 'dx300_boom_hyd_09b2_damped' (outside of
+current view)] 
+[> In lab09b2_run (line 28)] 
+=== down_damped (spool -80 % of dS_max, ramp 0 s), sim wall time 3.5 s ===
+     move     spool_frac    t_reach_s    t_move_s    theta0_deg    theta_reach_deg    E_pump_kJ    E_relief_kJ    E_cyl_in_kJ    E_cyl_out_kJ    E_cyl_net_kJ    E_mech_kJ    E_mech_abs_kJ    W_pos_kJ    W_neg_kJ    E_Fv_kJ    loss_pump_to_cyl_kJ    loss_supply_valve_kJ    loss_cyl_to_mech_kJ    vol_cap_m3    vol_rod_m3    vol_pump_m3    vol_relief_m3    vol_kin_m3    p_pump_mean_bar    p_pump_max_bar    p_cap_mean_bar    p_rod_mean_bar    p_rod_min_bar    p_cap_min_bar    v_mean_mps    v_peak_mps    relief_open_frac    E_pump_standby_kJ    Q_cmd_max_err    cav_cap_frac    cav_rod_frac    p_cap_max_bar    Q_cyl_peak_Lmin
+    ______    __________    _________    ________    __________    _______________    _________    ___________    ___________    ____________    ____________    _________    _____________    ________    ________    _______    ___________________    ____________________    ___________________    __________    __________    ___________    _____________    __________    _______________    ______________    ______________    ______________    _____________    _____________    __________    __________    ________________    _________________    _____________    ____________    ____________    _____________    _______________
+
+    "down"       -0.8        4.4017       3.4017        60.4           -47.056         886.41        132.14         575.34          1137.9         -562.58         -573          614.53         20.768      593.77      -573            311.07                  178.93                 10.415            0.044367      0.024129      0.028007        0.0040001       0.02406          316.49             330.8             241.34            245.34         0.00075202         12.668         -0.42579      0.54006          0.89375              243.52           8.2334e-05           0               0             334.66            538.26     
+
+wrote export/simscape_down_damped.csv  (4902 rows, 0.001 s grid)
+wrote export/simscape_energy_damped.csv
