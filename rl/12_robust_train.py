@@ -5,9 +5,12 @@ Same layout and SAC settings as rl/08b_robust_train.py. Configs ["plain", "resid
 rl/models/12_{config}_w{w}_s{s}.zip and appends (config, w, seed, train_s) to
 rl/12_robust_train_log.csv. Resumable: a model already saved is skipped.
 
-Usage: python rl/12_robust_train.py [--dry-run] [--config residual] [--w 0.1] [--seed 0]
+Usage: python rl/12_robust_train.py [--dry-run] [--train-noise] [--config residual] [--w 0.1] [--seed 0]
   --config / --w / --seed  train only that subset (default: all)
   --dry-run                2,000 steps, residual, w=0.1, seed 0, saved as *_dry.zip, not logged
+  --train-noise            Lab 12 step 3: BoomEnvRealRobust(train_noise=True), sensor noise per
+                           episode from {0, 0.2, 0.5, 1.0} deg. Saved as rl/models/12n_{config}_w{w}_s{s}.zip
+                           (the 12_* models are not touched), logged with config "{config}_noise".
 """
 import csv
 import os
@@ -24,6 +27,8 @@ def arg(flag, cast, default):
 
 
 DRY_RUN = "--dry-run" in sys.argv
+TRAIN_NOISE = "--train-noise" in sys.argv
+PREFIX = "12n" if TRAIN_NOISE else "12"
 CONFIGS = arg("--config", str, ["residual"] if DRY_RUN else ["plain", "residual"])
 WEIGHTS = arg("--w", float, [0.1] if DRY_RUN else [0.0, 0.1, 0.3])
 SEEDS = arg("--seed", int, [0] if DRY_RUN else [0, 1, 2])
@@ -37,12 +42,12 @@ os.makedirs(MODEL_DIR, exist_ok=True)
 for config in CONFIGS:
     for w in WEIGHTS:
         for s in SEEDS:
-            name = f"12_{config}_w{w}_s{s}{SUFFIX}"
+            name = f"{PREFIX}_{config}_w{w}_s{s}{SUFFIX}"
             path = f"{MODEL_DIR}/{name}.zip"
             if os.path.exists(path) and not DRY_RUN:
                 print(f"{name}: exists, skipped")
                 continue
-            env = BoomEnvRealRobust(w_energy=w, residual=(config == "residual"))
+            env = BoomEnvRealRobust(w_energy=w, residual=(config == "residual"), train_noise=TRAIN_NOISE)
             model = SAC("MlpPolicy", env, device="cpu", seed=s, verbose=0, tensorboard_log="rl/tb")
             t0 = time.time()
             model.learn(total_timesteps=STEPS, tb_log_name=name)
@@ -55,4 +60,4 @@ for config in CONFIGS:
                     writer = csv.writer(f)
                     if new_log:
                         writer.writerow(["config", "w", "seed", "train_s"])
-                    writer.writerow([config, w, s, f"{train_s:.1f}"])
+                    writer.writerow([config + ("_noise" if TRAIN_NOISE else ""), w, s, f"{train_s:.1f}"])

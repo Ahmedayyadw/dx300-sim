@@ -26,6 +26,18 @@ features of rl/boom_env_robust.py are added on top:
              rollout; its gain estimator is told the applied command u (= u_base when a = 0).
              residual=False: u = a.
   substeps   10, BoomEnvReal.SUBSTEPS (semi-implicit Euler, command held over the control step).
+  train_noise  (Lab 12 step 3, default False = the env above, unchanged bit for bit). When True,
+             each reset draws a sensor noise level sigma uniformly from NOISE_LEVELS_DEG = {0, 0.2,
+             0.5, 1.0} deg, the levels of the Lab 10/11 eval rows, with the Lab 10 noise model
+             (NoisyBoomEnvReal of rl/10_sched_real.py): theta_m = theta + N(0, sigma),
+             omega_m = omega + N(0, sigma / dt x 0.1), e_m = target - theta_m, float32. One
+             measurement per control step feeds both the policy and the base PID (act and the
+             estimator update), as in the Lab 11 rollout. The policy observation is
+             [theta_m, omega_m, e_m, int(e_m) dt]; the reward keeps the true error and speed.
+             The noise is drawn from the episode RNG after all other draws, so the other
+             randomization of a seed is the same as with train_noise=False.
+             options={"sigma_deg": s} fixes the level, {"noise_rng": g} uses the Generator g for
+             the noise instead of the episode RNG (tests: the Lab 10 noise stream).
 
 With a = 0, randomize=False and the m_tip / payload of a Lab 10 variant, the residual env gives the
 Lab 11 `balanced` rollout bit for bit (tests/test_boom_env_real_robust.py).
@@ -69,6 +81,7 @@ M_EMPTY, M_FULL = L10.M_EMPTY, L10.M_FULL      # 1120 kg (OFFICIAL), 3406 kg (ES
 P_REF_W = R.Q_PUMP_M3S * R.P_RELIEF_PA          # 271.7 kW
 INTEG_CLIP = 1.0
 EDGE_RAD = 0.05                                 # scenario margin from the end stops, as 08b
+NOISE_LEVELS_DEG = (0.0, 0.2, 0.5, 1.0)         # sensor noise levels of the Lab 10/11 eval rows
 
 
 class BoomEnvRealRobust(R.BoomEnvReal):
@@ -79,7 +92,10 @@ class BoomEnvRealRobust(R.BoomEnvReal):
     P_TAU, TAU_RANGE = 0.5, (0.7, 1.0)
     J_RANGE = (0.38, 1.5)
 
-    def __init__(self, w_energy=0.1, residual=False, randomize=True, m_tip=M_FULL, payload=None):
+    def __init__(self, w_energy=0.1, residual=False, randomize=True, m_tip=M_FULL, payload=None,
+                 train_noise=False):
+        self.train_noise = bool(train_noise)
+        self.sigma_deg, self.meas = 0.0, np.zeros(3, np.float32)
         super().__init__(w_energy=w_energy, m_tip=m_tip, payload=payload)
         self.residual, self.randomize = residual, randomize
         self.m_tip_fixed, self.payload_fixed = float(m_tip), payload
@@ -90,7 +106,15 @@ class BoomEnvRealRobust(R.BoomEnvReal):
     def _plant_obs(self):
         return R.BoomEnvReal._obs(self)          # [theta, omega, e], what the base controller sees
 
+    def _measure(self):
+        """train_noise: [theta_m, omega_m, e_m] with the Lab 10 noise model (one draw per call)."""
+        if self.sigma_deg > 0.0:
+            return L10.NoisyBoomEnvReal._obs(self)
+        return R.BoomEnvReal._obs(self)
+
     def _obs(self):
+        if self.train_noise:
+            return np.array([self.meas[0], self.meas[1], self.meas[2], self.integ], dtype=np.float32)
         return np.array([self.th, self.om, self.target - self.th, self.integ], dtype=np.float32)
 
     def reset(self, seed=None, options=None):
@@ -113,25 +137,38 @@ class BoomEnvRealRobust(R.BoomEnvReal):
             j = rng.uniform(*self.J_RANGE)
         self.m_tip0 = self.m_tip = float(m_tip)
         self.payload, self.j_scale, self.tau_scale = payload, j, s
+        info = {"m_tip": self.m_tip0, "payload": payload, "j_scale": j, "tau_scale": s}
+        if self.train_noise:                      # after all other draws: they stay as with noise off
+            opts = options or {}
+            self.sigma_deg = float(opts["sigma_deg"] if "sigma_deg" in opts else rng.choice(NOISE_LEVELS_DEG))
+            self.noise_rng = opts.get("noise_rng", rng)
+            self.sigma_th = np.radians(self.sigma_deg)
+            self.sigma_om = self.sigma_th / self.dt * 0.1           # as make_env of Lab 10
+            self.meas = self._measure()
+            info["sigma_deg"] = self.sigma_deg
         if self.ctrl is not None:
             self.ctrl.reset()
-        return self._obs(), {"m_tip": self.m_tip0, "payload": payload, "j_scale": j, "tau_scale": s}
+        return self._obs(), info
 
     def step(self, action):
         a = float(np.clip(action[0], -1, 1))
         u_base = 0.0
         if self.ctrl is not None:
-            u_base = self.ctrl.act(self._plant_obs())
+            u_base = self.ctrl.act(self.meas if self.train_noise else self._plant_obs())
             u = float(np.clip(u_base + a, -1.0, 1.0))
             self.ctrl.u_prev = u                  # gain estimator: the command really applied
         else:
             u = a
         e0 = self.energy_J
         _, _, _, trunc, info = super().step(np.array([u * self.tau_scale]))
+        if self.train_noise:
+            self.meas = self._measure()
         if self.ctrl is not None:
-            self.ctrl.update(self._plant_obs(), info["tau_cyl"], self.th_min, self.th_max)
+            self.ctrl.update(self.meas if self.train_noise else self._plant_obs(), info["tau_cyl"],
+                             self.th_min, self.th_max)
         err = self.target - self.th
-        self.integ = float(np.clip(self.integ + err * self.dt, -INTEG_CLIP, INTEG_CLIP))
+        e_int = float(self.meas[2]) if self.train_noise else err     # the policy knows only e_m
+        self.integ = float(np.clip(self.integ + e_int * self.dt, -INTEG_CLIP, INTEG_CLIP))
         p_w = (self.energy_J - e0) / self.dt
         reward = -(err ** 2 + 0.01 * self.om ** 2 + self.w_energy * p_w / P_REF_W)
         info.update(u_base=u_base, u=u, P_W=p_w)

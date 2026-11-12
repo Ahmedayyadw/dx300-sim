@@ -1,7 +1,9 @@
 """Lab 12 step 2 (issue #7): evaluate the trained SAC models on the real plant. No training.
 
 Models  rl/models/12_{residual,plain}_w0.1_s{0,1,2}.zip, trained by rl/12_robust_train.py on
-        BoomEnvRealRobust (rl/boom_env_real_robust.py), 100k steps each.
+        BoomEnvRealRobust (rl/boom_env_real_robust.py), 100k steps each, no sensor noise;
+        rl/models/12n_residual_w0.1_s{0,1,2}.zip (step 3), same with --train-noise (sensor noise
+        per episode from {0, 0.2, 0.5, 1.0} deg).
 Against the three Lab 11 points (rl/11_points.json: fast, balanced, economical) with fix 2b
         (adapt_Tf1_c1_n2 of rl/11_dump_fix_choice.json).
 Protocol exactly as `--step eval` of rl/11_real_plant_tuning.py: the 100 unseen scenarios
@@ -61,15 +63,27 @@ MODEL_DIR = "rl/models"
 TRAIN_LOG = "rl/12_robust_train_log.csv"                 # read only
 W = 0.1
 SEEDS = (0, 1, 2)
-CONFIGS = ("residual", "plain")
+SAC_MODELS = {                                           # label: (file prefix, config, train log config)
+    "sac_residual": ("12", "residual", "residual"),
+    "sac_plain": ("12", "plain", "plain"),
+    "sac_noise_residual": ("12n", "residual", "residual_noise"),
+}
+SAC_NAME = {"sac_residual": "SAC residual", "sac_plain": "SAC plain",
+            "sac_noise_residual": "SAC residual, noise-trained (12n)"}
 ROLES = ("fast", "balanced", "economical")
 SET = "new100"
 ROWS72 = [(group, name, cond, variant) for group, cases in L10.GROUPS for name, cond in cases
           for variant in L10.VARIANTS]
 
 
-def model_path(config, seed):
-    return f"{MODEL_DIR}/12_{config}_w{W}_s{seed}.zip"
+def model_name(label, seed):
+    prefix, config, _ = SAC_MODELS[label]
+    return f"{prefix}_{config}_w{W:g}_s{seed}"
+
+
+def model_path(label, seed):
+    prefix, config, _ = SAC_MODELS[label]
+    return f"{MODEL_DIR}/{prefix}_{config}_w{W}_s{seed}.zip"
 
 
 _MODELS = {}
@@ -111,9 +125,9 @@ class SacCtrl(L11.Sched11):
 def make_ctrl(kind, arg, tau_noise):
     if kind == "pid":
         return L11.Sched11(arg, E.EST, tau_noise=tau_noise)
-    config, seed = arg
-    model = None if seed is None else load_model(model_path(config, seed))
-    return SacCtrl(model, config == "residual", tau_noise=tau_noise)
+    label, seed = arg
+    model = None if seed is None else load_model(model_path(label, seed))
+    return SacCtrl(model, SAC_MODELS[label][1] == "residual", tau_noise=tau_noise)
 
 
 def run_row(job):
@@ -147,8 +161,8 @@ def run_row(job):
 def jobs(set_name=SET):
     pts = dict(L11.load_points())
     out = [(role, "pid", pts[role], None, set_name, g, n, c, v) for role in ROLES for g, n, c, v in ROWS72]
-    out += [(f"sac_{cfg}", "sac", (cfg, s), s, set_name, g, n, c, v)
-            for cfg in CONFIGS for s in SEEDS for g, n, c, v in ROWS72]
+    out += [(lab, "sac", (lab, s), s, set_name, g, n, c, v)
+            for lab in SAC_MODELS for s in SEEDS for g, n, c, v in ROWS72]
     return out
 
 
@@ -170,7 +184,7 @@ def check_zero_residual():
         cond = conds[name]
         ref, out = ([[L11.rollout(make_ctrl(kind, arg, cond.get("tau_noise", 0.0)), env, *sc)
                       for sc in L10.SCEN["orig20"]]
-                     for kind, arg in (("pid", E.BAL_GAINS), ("sac", ("residual", None)))
+                     for kind, arg in (("pid", E.BAL_GAINS), ("sac", ("sac_residual", None)))
                      for env in [L10.make_env(variant, **cond)]])
         for a, b in zip(ref, out):
             n += 1
@@ -194,8 +208,8 @@ def check_env_path():
     error. (a) with the env's integral the paths agree bit for bit; (b) the eval integral (measured
     float32 e) moves the result by the reported amount."""
     worst, n = {False: 0.0, True: 0.0}, 0
-    for cfg in CONFIGS:
-        model = load_model(model_path(cfg, 0))
+    for label, (_, cfg, _) in SAC_MODELS.items():
+        model = load_model(model_path(label, 0))
         for variant in ("baseline", "dump"):
             m_tip, payload = L10.VARIANTS[variant]
             for th0, target in L10.SCEN["orig20"][:5]:
@@ -217,7 +231,8 @@ def check_env_path():
     assert worst[True] == 0.0, worst
     assert worst[False] < 1e-3, worst
     log(f"check 2: eval path equals BoomEnvRealRobust stepped with model.predict on {n} moves"
-        f" (2 configs, seed 0, baseline and dump, 5 tuning scenarios): largest difference {worst[True]}"
+        f" ({len(SAC_MODELS)} models, seed 0, baseline and dump, 5 tuning scenarios, train_noise off):"
+        f" largest difference {worst[True]}"
         f" with the env's float64 error integral; {worst[False]:.1e} (rad, rad/s or kJ) with the integral"
         f" of the measured float32 e used in the evaluation")
 
@@ -298,20 +313,22 @@ def read_rows():
 
 def report(rows):
     pts = dict(L11.load_points())
-    labels = list(ROLES) + [f"sac_{c}" for c in CONFIGS]
+    present = {r["controller"] for r in rows}
+    sac = [lab for lab in SAC_MODELS if lab in present]
+    labels = list(ROLES) + sac
     name = {role: f"{role} PID (Kp {pts[role][0]:g}, Kd {pts[role][2]:g}) + fix 2b" for role in ROLES}
-    name.update({f"sac_{c}": f"SAC {c}, w {W:g}, mean of 3 seeds" for c in CONFIGS})
+    name.update({lab: f"{SAC_NAME[lab]}, w {W:g}, mean of 3 seeds" for lab in sac})
     cells = {lab: per_row(rows, lab) for lab in labels}
     summ = {lab: summarise(cells[lab]) for lab in labels}
-    seed_summ = {(c, s): summarise(per_row([r for r in rows if r["sac_seed"] == s], f"sac_{c}"))
-                 for c in CONFIGS for s in SEEDS}
+    seed_summ = {(lab, s): summarise(per_row([r for r in rows if r["sac_seed"] == s], lab))
+                 for lab in sac for s in SEEDS}
     with open(TRAIN_LOG) as f:
         tlog = {(r["config"], int(r["seed"])): float(r["train_s"]) for r in csv.DictReader(f)
                 if float(r["w"]) == W}
     n_new = int(rows[0]["n_scen"])
     out = []
     w = out.append
-    w("# Lab 12 step 2: SAC on the real plant against the Lab 11 PID points")
+    w("# Lab 12 steps 2-3: SAC on the real plant against the Lab 11 PID points")
     w("")
     w("Issue #7. Generated by `python rl/12_eval.py` from `rl/12_eval.csv`. No training in this step.")
     w("")
@@ -328,11 +345,13 @@ def report(rows):
       " (9 single conditions + 9 combined conditions x 4 payload variants), 10 s per move, 10 substeps,"
       " noise seed 0 (the Lab 10 noise streams), Lab 11 rollout and floor.")
     w("- PID: the three approved Lab 11 points with fix 2b (adaptive m_hat filter, slow T_f = 1 s, c = 1, n_hold = 2).")
-    w("- SAC: `rl/models/12_{residual,plain}_w0.1_s{0,1,2}.zip`, deterministic action (`model.predict`)."
-      " Residual: u = clip(u_balanced + a, -1, 1) on balanced + fix 2b. Plain: u = a.")
+    w("- SAC: " + ", ".join(f"`rl/models/{model_name(lab, '{0,1,2}')}.zip`" for lab in sac)
+      + ", deterministic action (`model.predict`). Residual: u = clip(u_balanced + a, -1, 1) on balanced"
+      " + fix 2b. Plain: u = a.")
     w("- SAC observation [theta, omega, e, integral of e] from the measured signals: on the noise rows the"
-      " policy sees the same noisy theta / omega as the PID. The SAC models were trained without sensor noise"
-      " and without torque-reading noise.")
+      " policy sees the same noisy theta / omega as the PID. The `12_*` models were trained without sensor"
+      " noise; the `12n_*` models (step 3) with sensor noise drawn per episode from {0, 0.2, 0.5, 1.0} deg"
+      " (Lab 10 noise model). No model was trained with torque-reading noise.")
     w("- Seeds: per row, mean metrics (miss %, E_mech, floor, reach time, split) are the mean over the 3 seeds;"
       " max metrics (worst error, slowest reach, moves never reached) are the worst seed.")
     w("- Gap to floor = 100 x (mean E_mech over the 72 rows / mean floor over the 72 rows - 1).")
@@ -393,19 +412,20 @@ def report(rows):
     w("| model | train s (log) | miss % mean | worst row miss % | break | degraded | E_mech kJ | gap % |"
       " reach 20 cm s | never reached | worst error cm |")
     w("|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|")
-    for c in CONFIGS:
+    for lab in sac:
         for s in SEEDS:
-            x = seed_summ[(c, s)]
-            w(f"| 12_{c}_w{W:g}_s{s} | {tlog.get((c, s), float('nan')):.0f} | {x['miss_mean']:.2f} | {x['miss_max']:.0f} |"
+            x = seed_summ[(lab, s)]
+            t = tlog.get((SAC_MODELS[lab][2], s), float("nan"))
+            w(f"| {model_name(lab, s)} | {t:.0f} | {x['miss_mean']:.2f} | {x['miss_max']:.0f} |"
               f" {x['n_break']} | {x['n_degr']} | {x['E']:.1f} | {x['gap']:.1f} | {fnum(x['reach'], 2)} |"
               f" {x['never']} | {x['max_cm']:.1f} |")
     w("")
     w("## 4. Reading")
     w("")
     b = summ["balanced"]
-    for c in CONFIGS:
-        s = summ[f"sac_{c}"]
-        w(f"- SAC {c} against balanced PID + fix 2b: gap {s['gap']:.1f} % vs {b['gap']:.1f} %"
+    for lab in sac:
+        s = summ[lab]
+        w(f"- {SAC_NAME[lab]} against balanced PID + fix 2b: gap {s['gap']:.1f} % vs {b['gap']:.1f} %"
           f" ({s['gap'] - b['gap']:+.1f} points), mean E_mech {s['E'] - b['E']:+.1f} kJ, reach"
           f" {fnum(s['reach'], 2)} s vs {fnum(b['reach'], 2)} s, miss {s['miss_mean']:.2f} % vs {b['miss_mean']:.2f} %,"
           f" {s['n_break']} break / {s['n_degr']} degraded rows vs {b['n_break']} / {b['n_degr']}.")
@@ -431,9 +451,9 @@ def main():
                              if ln.startswith(("- `check", "- `evaluation")))
         report(read_rows())
         return
-    for cfg in CONFIGS:
+    for lab in SAC_MODELS:
         for s in SEEDS:
-            assert os.path.exists(model_path(cfg, s)), model_path(cfg, s)
+            assert os.path.exists(model_path(lab, s)), f"missing {model_path(lab, s)}: train it first"
     check_zero_residual()
     check_env_path()
     if "--check" in sys.argv:
