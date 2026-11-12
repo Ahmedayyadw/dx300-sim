@@ -1,0 +1,56 @@
+{
+  "tuning_set": "orig20",
+  "noise_seeds": 5,
+  "rule": "Choice rule of 11c on the tuning set: worst miss rate, then mean miss rate, then mean E_mech.",
+  "n_settings": 170,
+  "roles": {
+    "clamp": "clamp",
+    "slow": "slow_Tf0.5",
+    "adapt": "adapt_Tf1_c1_n2",
+    "gate": "gate_0.5",
+    "together": "all_adapt_Tf1_c1_n2_gate1",
+    "clamp_filter": "clamp+adapt_Tf1_c2_n4",
+    "recommended": "adapt_Tf1_c1_n2"
+  },
+  "estimators": [
+    {
+      "name": "base"
+    },
+    {
+      "name": "clamp",
+      "clamp": [
+        1120.0,
+        3406.0
+      ]
+    },
+    {
+      "name": "slow_Tf0.5",
+      "t_f": 0.5
+    },
+    {
+      "name": "adapt_Tf1_c1_n2",
+      "t_f": 1.0,
+      "adapt": [
+        1.0,
+        2
+      ]
+    },
+    {
+      "name": "gate_0.5",
+      "acc_gate": 0.5
+    },
+    {
+      "name": "all_adapt_Tf1_c1_n2_gate1",
+      "t_f": 1.0,
+      "adapt": [
+        1.0,
+        2
+      ],
+      "clamp": [
+        1120.0,
+        3406.0
+      ],
+      "acc_gate": 1.0
+    }
+  ]
+}

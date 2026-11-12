@@ -1,0 +1,25 @@
+{
+  "approved": true,
+  "tuning_set": "orig20",
+  "rule": "Tuning set only (20 original scenarios, nominal plant). Admissible = Pareto front points with mean E_mech >= mean floor and peak overshoot < overshoot_max_cm. economical = lowest E_mech admissible. fast = lowest E_mech within fast_band_s of the fastest admissible. balanced = admissible point between them closest to (t_fast, E_economical) on axes normalised by the fast-economical span.",
+  "fast_band_s": 0.1,
+  "overshoot_max_cm": 20.0,
+  "points": {
+    "fast": {
+      "kp": 5,
+      "ki": 0.0,
+      "kd": 2
+    },
+    "balanced": {
+      "kp": 1.5,
+      "ki": 0.0,
+      "kd": 1
+    },
+    "economical": {
+      "kp": 0.8,
+      "ki": 0.0,
+      "kd": 0.8
+    }
+  },
+  "approved_by": "user, in chat, 2026-11-12, after seeing the Pareto front of the 20 original scenarios"
+}
