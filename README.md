@@ -13,7 +13,7 @@ Soft Actor-Critic (SAC, stable-baselines3) control of the boom of a Doosan DX300
 
 **Stage 1 result:** a tuned PID with gravity feed-forward uses the least energy on the nominal model (68.6 kJ, 1.0 % of moves over 20 cm), but misses 20 cm on 100 % of moves with Payload ×1.2. Domain-randomized SAC stays at 3.0–8.0 % under Payload ×1.2, at 100.8–173.6 kJ on the nominal model. SAC w=0.3 (100.8 kJ) is close to the energy of PID + I (97.7 kJ, 37 % misses under Payload ×1.2). Source: [paper/table1.md](paper/table1.md) and [rl/08b_eval_n10.csv](rl/08b_eval_n10.csv).
 
-**Latest result (Lab 10, real plant):** on the plant built from the Lab 08a Simscape export (holding torque within 2 % of Simscape), the gain-scheduled PID `sched` retuned to Kp 0.25, Kd 0.5 misses 20 cm on 0–1 % of moves (mean 0.1 %) over the 36 rows matched to the placeholder plant, against 0–3 % there. E_mech is 134.3–189.7 kJ against 66.8–89.1 kJ, mainly because the real plant carries the front attachment (gravity torque at θ = 0 is ×2.21). It breaks on `dump` under heavy combined noise (up to 80 %). Geometry and friction are ESTIMATED. Source: [rl/10_real_plant.md](rl/10_real_plant.md).
+**Latest result (Lab 11, real plant, PID only):** on the plant built from the Lab 08a Simscape export (Lab 10), three PID operating points were picked from a Pareto front of energy vs move time: `fast` (Kp 5, Kd 2, 1.2 s), `balanced` (Kp 1.5, Kd 1, 1.5 s) and `economical` (Kp 0.8, Kd 0.8, 2.0 s). On the nominal plant `economical` is within 0.3 % of a computed energy floor (155.5 vs 154.9 kJ), so at slow moves there is almost nothing left for a learned controller; the gap is +5.1 % at 1.5 s and +10.4 % at 1.2 s, and larger under sensor noise. An adaptive mass-estimate filter fixes the Lab 10 `dump` failure: no row over 5 % misses on any of the three points (72 rows, 100 unseen scenarios). SAC has not yet been trained on this plant. Geometry and friction are ESTIMATED. Source: [rl/11_real_plant_tuning.md](rl/11_real_plant_tuning.md); Lab 10 plant and retune: [rl/10_real_plant.md](rl/10_real_plant.md).
 
 ## Repo layout
 
@@ -22,14 +22,14 @@ dx300sim/          DX300 parameters (dx300_params.py: boom length 6.245 m, pins,
 rl/                RL code and results
   boom_env.py        1-DOF boom env (labs 02–07)
   boom_env_robust.py randomized boom env, power reward, substeps option (labs 08b–09)
-  boom_env_real.py   boom env on the real plant from the Lab 08a Simscape export (lab 10)
+  boom_env_real.py   boom env on the real plant from the Lab 08a Simscape export (labs 10–11, PID only so far)
   0N_*.py            numbered lab scripts, with their CSV / PNG / log results next to them
   models/, tb/       trained models and TensorBoard logs (gitignored)
 paper/             Fig 1–3 (figs/) and Table 1 (table1.md, table1.tex), written by rl/09_paper_figures.py
 matlab/lab08a/     Simscape Multibody + Fluids boom model, figures, parameter export (export/boom_params_lab08a.json)
 matlab/lab09b2/    Simscape energy runs (plain and damped), exported to export/simscape_*.csv
 ml/                early fault detection experiments (Isolation Forest, LSTM autoencoder)
-docs/              acceptable error rationale (20 cm), env vs DX300 parameter audit
+docs/              acceptable error rationale (20 cm), env vs DX300 parameter audit, payload estimator, real plant design
 tests/             pytest tests for the parameters and boom geometry
 ```
 
@@ -76,9 +76,9 @@ Simscape model (MATLAB):
 matlab -batch "cd('matlab/lab08a'); stage4_run"
 ```
 
-## Stage 1 labs
+## Labs
 
-Unless noted: 3 seeds (0, 1, 2), 100 unseen scenarios (`new100`), "misses" = share of moves with tip error over 20 cm, energy = mean mechanical work per move. Tip error = 6.245 m × angle error (1° ≈ 10.9 cm).
+Labs 03–09f are Stage 1 on the placeholder plant (`boom_env.py`, `boom_env_robust.py`); Labs 10–11 move to the real plant (`boom_env_real.py`). Unless noted: 3 seeds (0, 1, 2), 100 unseen scenarios (`new100`), "misses" = share of moves with tip error over 20 cm, energy = mean mechanical work per move. Tip error = 6.245 m × angle error (1° ≈ 10.9 cm).
 
 | Lab | What | Key result |
 |---|---|---|
@@ -88,7 +88,7 @@ Unless noted: 3 seeds (0, 1, 2), 100 unseen scenarios (`new100`), "misses" = sha
 | 05b | Out-of-range targets (`out100`) | Policies fail outside the training range. w=0.1 worst error 4.78° (52 cm), 34 % misses. The 20 cm claim holds only inside the trained envelope. |
 | 06 / 06b | Robustness of the 05 models | w=0.1 fails under Mass ×0.42 (91 % misses), Payload ×1.2 (48 %), angle-dependent torque limit Torque(θ) (17 %). It holds under sensor noise up to 1° (0.3 %) and Inertia ×0.38 (0 %). w=0 is more robust to mass (19 %), payload (2.3 %) and Torque(θ) (2.3 %), but not to Inertia ×0.38 (20 %, an integrator artifact, see 08c). |
 | 07 | PID baselines with gravity feed-forward | PID matches SAC w=0.1 accuracy (mean 0.68° vs 0.63°, 1 % vs 0 % misses) at 68.5 vs 127.3 kJ. PID fails under Mass ×0.42 (100 %), Payload ×1.2 (100 %), Torque(θ) (44 %). PID + I: 98.3 kJ, fails under Mass ×0.42 (99 %) and Payload ×1.2 (37 %). |
-| 08a | Simscape boom model (MATLAB) | Multibody + Fluids boom with front attachment masses, hydraulic cylinder, valve and relief. Validated vs analytic < 0.1 %, stall torque 0.24 %, boom-up 5.62 s, damping ζ sweep. Geometry estimated from a drawing; parameters exported to JSON. Not yet used by the RL env. |
+| 08a | Simscape boom model (MATLAB) | Multibody + Fluids boom with front attachment masses, hydraulic cylinder, valve and relief. Validated vs analytic < 0.1 %, stall torque 0.24 %, boom-up 5.62 s, damping ζ sweep. Geometry estimated from a drawing; parameters exported to JSON. Used as the real plant in Labs 10–11 (PID only); SAC not yet trained on it. |
 | 08b | Robust retrain: 18 models, plain + residual SAC (on top of the 07 PID), power reward, randomized mass / Torque(θ) / payload, full end-stop range | Plain SAC w=0.1 vs 06: payload misses 48 % → 6.3 %, Torque(θ) 17 % → 3.0 %, `out100` 34 % → 10.0 % (Residual SAC w=0.1: 7.3 %, 5.0 %, 0.0 %). Nominal energy 100.8–127.9 kJ for w=0.1/0.3 (150.8–173.6 kJ for w=0) vs 68.6 kJ for PID. SAC w=0.3 is close to PID + I energy (100.8 vs 97.7 kJ) with fewer payload misses (3.0 % vs 37 %). Mass ×0.42 remains the hardest case (Table 1). |
 | 08c | Integrator check | The Inertia ×0.38 chattering is an explicit-Euler artifact: h·b/J = 0.05 × 6e5 / (0.38 × 8e4) ≈ 0.99 at one step per 0.05 s. 10 substeps fix it (Plain SAC w=0.1 misses 20.7 % → 4.0 %). All 08b–09 results use 10 substeps. |
 | 08d | Eval at the 08a inertia with front attachment (J ≈ 262k kg m²) and 08a torque limit τ_up(θ) | Plain SAC w=0.1: 8.0 % misses at 209.5 kJ; Residual SAC w=0.1: 15.0 % at 190.6 kJ; PID: 100 %; PID + I: 72 %. Eval only, no retraining. |
@@ -101,6 +101,7 @@ Unless noted: 3 seeds (0, 1, 2), 100 unseen scenarios (`new100`), "misses" = sha
 | 09d / 09e | Residual SAC on top of `sched` vs `sched` vs 08b SAC | Goal not met: `sched` + residual misses 20.7–34.7 % on combined rows vs 1–10 % for `sched` alone, at 1.02–1.09× its energy ([rl/09e_comparison.md](rl/09e_comparison.md)). |
 | 09f | Kp retune of `sched` (no RL) | Kp 0.5 → 0.55 meets the goal: combined rows 1–3 % misses, E_mech 67.3–89.1 kJ (≤ 1.046× Kp=0.5), no single row worse. Tuned on the 20 original scenarios, checked on 100 unseen ([rl/09f_kp_retune.md](rl/09f_kp_retune.md)). |
 | 10 | `sched` on the real plant (Lab 08a Simscape export), Simscape check, retune | Python vs Simscape holding torque within ~2 %. Retuned Kp 0.25, Kd 0.5 (Lab 07 criterion): 0–1 % misses on 36 matched rows vs 0–3 % on the placeholder, E_mech ≈ 2× (front attachment). Old gains overshoot (≈ 1/300 of the placeholder damping). Breaks on `dump` under combined noise ([rl/10_real_plant.md](rl/10_real_plant.md), [docs/10_real_plant.md](docs/10_real_plant.md)). |
+| 11 | Energy floor, time-limited PID tuning and the `dump` failure on the real plant (no RL) | Pareto front of E_mech vs move time; three approved points: `fast` (Kp 5, Kd 2), `balanced` (Kp 1.5, Kd 1), `economical` (Kp 0.8, Kd 0.8). Nominal gap to the energy floor: +10.4 % at 1.2 s, +5.1 % at 1.5 s, +0.3 % at 2.0 s. Adaptive mass-estimate filter (`adapt_Tf1_c1_n2`): no row over 5 % misses on any point (72 rows); clamp and acceleration gate rejected (they break other rows). `fast` still oscillates on one low-inertia noisy row (+173 % above floor) ([rl/11_real_plant_tuning.md](rl/11_real_plant_tuning.md)). |
 
 ### Table 1
 
@@ -138,14 +139,14 @@ Seeds: mean of means, worst of maxima, mean of shares.
 ## Limitations
 
 - **Single boom joint.** Arm, bucket and swing are not modelled. Torque is applied directly at the joint; the RL env has no hydraulic model.
-- **Simulated, partly placeholder parameters.** [rl/boom_env.py](rl/boom_env.py) still uses placeholder values ([docs/param_audit.md](docs/param_audit.md)). Its gravity term uses the boom mass only; in the 08a model the front attachment is 71–88 % of the gravity torque and ≈ 88 % of J. The 08a Simscape model exists but uses estimated geometry and is not yet coupled to the RL env (08d swaps only J and the torque limit).
+- **SAC results are on the placeholder plant.** [rl/boom_env.py](rl/boom_env.py) and [rl/boom_env_robust.py](rl/boom_env_robust.py), used for all SAC training (Labs 02–09), still use placeholder values ([docs/param_audit.md](docs/param_audit.md)). Their gravity term uses the boom mass only; in the 08a model the front attachment is 71–88 % of the gravity torque and ≈ 88 % of J. The real plant [rl/boom_env_real.py](rl/boom_env_real.py) (Labs 10–11) uses the 08a parameters, but only PID controllers have been run on it so far (08d swaps only J and the torque limit for SAC). Its geometry and friction are estimated from a drawing.
 - **Energy.** SAC uses more energy than the nominal PID (100.8–173.6 vs 68.6 kJ). Its advantage is robustness, not efficiency.
 - **Trained range only.** Results hold inside the trained range. Outside it (05b), errors reach 52 cm.
 - **Tolerance.** The 20 cm tip tolerance is a design assumption, not a published standard ([docs/acceptable_error.md](docs/acceptable_error.md)).
 
 ## Roadmap
 
-- **Lab 08a, next (after the paper):** use the Simscape boom model parameters in the RL env and re-evaluate, building on 08d.
+- **Next:** train and evaluate SAC on the real plant (`boom_env_real.py`) against the three Lab 11 PID points, targeting the remaining gaps (fast moves and sensor noise).
 - **Stage 2:** arm, bucket and swing; pump and valve; engine and fuel map; RL for the full attachment; validation with quarry data.
 - **Stage 3:** digging and breaker loads; energy recovery.
 - **Stage 4:** hydraulic fault detection and a fault-aware controller.
