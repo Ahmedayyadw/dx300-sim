@@ -22,7 +22,8 @@ dx300sim/          DX300 parameters (dx300_params.py: boom length 6.245 m, pins,
 rl/                RL code and results
   boom_env.py        1-DOF boom env (labs 02–07)
   boom_env_robust.py randomized boom env, power reward, substeps option (labs 08b–09)
-  boom_env_real.py   boom env on the real plant from the Lab 08a Simscape export (labs 10–11, PID only so far)
+  boom_env_real.py   boom env on the real plant from the Lab 08a Simscape export (labs 10–12)
+  boom_env_real_robust.py  real plant + 08b randomization, residual/plain SAC (lab 12)
   0N_*.py            numbered lab scripts, with their CSV / PNG / log results next to them
   models/, tb/       trained models and TensorBoard logs (gitignored)
 paper/             Fig 1–3 (figs/) and Table 1 (table1.md, table1.tex), written by rl/09_paper_figures.py
