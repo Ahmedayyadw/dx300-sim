@@ -84,11 +84,11 @@ Flow limit & -- & 494 L/min \\
 \subsection{Numerical integration}
 The controller runs at $\Delta t=50$\,ms and an episode lasts 10\,s (200 steps).
 Both plants use semi-implicit Euler integration with the command held over the control step.
-The placeholder plant takes one step per control step. For its low-inertia robustness case
+Training on the placeholder plant used one step per control step. For its low-inertia robustness case
 ($J\times0.38$) the damping term $h\,b/J$ reaches 0.99, and the chattering observed there was a
 numerical artefact: with 10 substeps it disappears and SAC returns to its baseline accuracy.
-The real-parameter plant is therefore always integrated with 10 substeps ($h=5$\,ms).
-% Source: Lab 08c. Check which substep setting Table 1 (08b eval) used before submission.
+All reported evaluations, and all training on the real-parameter plant, use 10 substeps ($h=5$\,ms).
+% Source: Lab 08c; Table 1 from rl/08b_eval.py --substeps 10.
 
 \subsection{Validation against Simscape}
 The real-parameter plant was compared with the Simscape model.
