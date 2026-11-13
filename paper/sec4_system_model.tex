@@ -1,0 +1,102 @@
+% Section 4: System model -- DRAFT 13 Nov 2026
+% Every number is taken from the dx300-sim repo (master 260de24):
+%   dx300sim/dx300_params.py, matlab/lab08a/export/boom_params_lab08a.json,
+%   rl/boom_env.py, rl/boom_env_real.py, rl/10c_dynamic_check.md.
+% Tags: OFFICIAL = Doosan/Develon document, ESTIMATED = drawing or literature,
+% ASSUMED = modelling choice. Check before submission.
+
+\section{System Model}
+\label{sec:model}
+
+\subsection{Boom geometry}
+The study considers the boom joint of a Doosan DX300 hydraulic excavator. Fig.~\ref{fig:geometry}
+% TODO: add a pin sketch (A, B, C, D) or the Excavator Design pin plot
+shows the four pins used: the boom foot pin $A$ (origin), the base pin $B$ of the two boom
+cylinders on the upper frame, the rod pin $C$ on the boom and the boom--arm pin $D$. With the
+$x$ axis forward and $y$ up, the pin coordinates at the reference pose of the drawing
+($\theta_\mathrm{ref}\approx-6.3^\circ$) are
+$B=(0.571,-0.695)$\,m, $C=(2.629,0.850)$\,m and $D=(6.208,-0.682)$\,m. % ESTIMATED from a drawing
+The resulting boom length $|AD|=6.245$\,m agrees with the manufacturer value. % OFFICIAL
+The boom angle $\theta$ is the angle of $A\!\to\!D$ from the horizontal and is limited by end
+stops to $[-47.2^\circ, 60.4^\circ]$. % ESTIMATED
+The two boom cylinders (bore 140\,mm, rod 95\,mm, stroke 1450\,mm) act together; % OFFICIAL
+their moment arm $r(\theta)$ about $A$ follows from the triangle $ABC$ and varies between
+0.51 and 0.90\,m over the joint range.
+
+\subsection{Joint dynamics}
+The boom is modelled as a single rotational degree of freedom,
+\begin{equation}
+J\,\ddot\theta = \tau_\mathrm{cyl} - \tau_g(\theta) - \tau_f(\theta,\dot\theta),
+\label{eq:dyn}
+\end{equation}
+with the gravity torque of the boom and of the front attachment lumped as point masses,
+\begin{equation}
+\tau_g(\theta) = g\,[\,m_b L_c\cos\theta + \textstyle\sum_i m_i(x_i\cos\theta - y_i\sin\theta)\,],
+\label{eq:grav}
+\end{equation}
+where $(x_i, y_i)$ are the positions of the arm pin, the arm and the bucket tip in the boom frame.
+Cylinder friction is a Coulomb plus viscous force mapped through the moment arm,
+$\tau_f = r(\theta)\,[F_c\,\mathrm{sgn}(v) + c_v v]$ with rod speed $v=r(\theta)\dot\theta$.
+The controller output $u\in[-1,1]$ sets the cylinder torque as a fraction of the
+pressure-limited maximum at the 330\,bar relief pressure, % OFFICIAL
+$\tau_\mathrm{cmd}=u\,\tau_\mathrm{up}(\theta)$ for $u\ge0$ (cap side) and
+$u\,\tau_\mathrm{down}(\theta)$ for $u<0$ (rod side).
+The pump flow $Q=494$\,L/min % OFFICIAL, 2 x 247 L/min
+limits the rod speed to $v\le Q/A_\mathrm{cap}=0.267$\,m/s when extending and
+$v\ge -Q/A_\mathrm{ann}=-0.496$\,m/s when retracting; on these limits the delivered torque
+$\tau_\mathrm{cyl}$ is the torque that holds the speed at its limit.
+The actuator energy of a move is the mechanical work
+$E = \int |\tau_\mathrm{cyl}\,\dot\theta|\,dt$.
+Hydraulic losses are not modelled, so $E$ is a lower bound on the pump energy.
+
+\subsection{Two plant parameter sets}
+Table~\ref{tab:params} lists the two parameter sets used.
+The \emph{placeholder plant} was used for the first experiments (Section~\ref{sec:exp}):
+rough values, a constant torque limit and a gravity term with one lumped mass.
+The \emph{real-parameter plant} takes its values from a Simscape Multibody/Fluids model of the
+DX300 boom with the front attachment. In that model the front attachment carries 71--88\,\% of
+the gravity torque and about 88\,\% of the inertia, which the placeholder plant does not capture.
+
+\begin{table}[t]
+\caption{Plant parameters}
+\label{tab:params}
+\centering
+\begin{tabular}{lcc}
+\hline
+Parameter & Placeholder & Real-parameter \\
+\hline
+Inertia about $A$, $J$ [kg\,m$^2$] & $8.0\times10^{4}$ & $2.62\times10^{5}$ \\
+Boom mass $m_b$ [kg] & 5000 (lumped) & 2330 \\
+Front masses (arm pin / arm / tip) [kg] & -- & 340 / 1270 / 3406 \\
+CoM distance $L_c$ [m] & 3.5 & 3.12 \\
+Gravity torque at $\theta=0$ [kN\,m] & 172 & 379 \\
+Torque limit [kN\,m] & 500 & 514--914 (up), 277--493 (down) \\
+Viscous damping & $6\times10^{5}$ N\,m\,s/rad & $c_v=2500$ N\,s/m \\
+Coulomb friction $F_c$ [N] & -- & 1900 \\
+Flow limit & -- & 494 L/min \\
+\hline
+\end{tabular}
+\end{table}
+% Real-parameter column: m_b, Q, relief pressure, cylinder sizes OFFICIAL; front masses
+% OFFICIAL, lumping ESTIMATED; tip mass ESTIMATED (bucket 1120 kg + 1.27 m^3 x 1800 kg/m^3);
+% J, Lc, friction (Li 2020, scaled) and end stops ESTIMATED.
+
+\subsection{Numerical integration}
+The controller runs at $\Delta t=50$\,ms and an episode lasts 10\,s (200 steps).
+Both plants use semi-implicit Euler integration with the command held over the control step.
+The placeholder plant takes one step per control step. For its low-inertia robustness case
+($J\times0.38$) the damping term $h\,b/J$ reaches 0.99, and the chattering observed there was a
+numerical artefact: with 10 substeps it disappears and SAC returns to its baseline accuracy.
+The real-parameter plant is therefore always integrated with 10 substeps ($h=5$\,ms).
+% Source: Lab 08c. Check which substep setting Table 1 (08b eval) used before submission.
+
+\subsection{Validation against Simscape}
+The real-parameter plant was compared with the Simscape model.
+The static holding torque agrees within about 2\,\%.
+For full-command moves across the whole joint range, the boom-up trajectory agrees
+closely (arrival time $-1.2$\,\%, RMS angle difference $0.74^\circ$); Simscape adds a
+$\approx$2\,Hz speed oscillation from oil compressibility, which the rigid plant omits.
+For boom-down, the plant is 9.5\,\% slower (maximum angle difference $11.8^\circ$), because it
+limits the retraction speed to the pump flow, whereas in Simscape gravity drives the boom
+faster while the rod side cavitates. Lowering moves of the real-parameter plant are therefore
+conservative.
