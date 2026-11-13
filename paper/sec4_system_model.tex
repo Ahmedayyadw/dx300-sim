@@ -61,20 +61,24 @@ the gravity torque and about 88\,\% of the inertia, which the placeholder plant 
 \caption{Plant parameters}
 \label{tab:params}
 \centering
+\footnotesize
+\setlength{\tabcolsep}{3pt}
 \begin{tabular}{lcc}
 \hline
 Parameter & Placeholder & Real-parameter \\
 \hline
-Inertia about $A$, $J$ [kg\,m$^2$] & $8.0\times10^{4}$ & $2.62\times10^{5}$ \\
+$J$ about $A$ [kg\,m$^2$] & $8.0\times10^{4}$ & $2.62\times10^{5}$ \\
 Boom mass $m_b$ [kg] & 5000 (lumped) & 2330 \\
-Front masses (arm pin / arm / tip) [kg] & -- & 340 / 1270 / 3406 \\
+Front masses [kg]$^{a}$ & -- & 340 / 1270 / 3406 \\
 CoM distance $L_c$ [m] & 3.5 & 3.12 \\
-Gravity torque at $\theta=0$ [kN\,m] & 172 & 379 \\
-Torque limit [kN\,m] & 500 & 514--914 (up), 277--493 (down) \\
-Viscous damping & $6\times10^{5}$ N\,m\,s/rad & $c_v=2500$ N\,s/m \\
-Coulomb friction $F_c$ [N] & -- & 1900 \\
-Flow limit & -- & 494 L/min \\
+$\tau_g(0)$ [kN\,m] & 172 & 379 \\
+Torque limit up [kN\,m] & 500 & 514--914 \\
+Torque limit down [kN\,m] & 500 & 277--493 \\
+Damping & $6\times10^{5}$ N\,m\,s/rad & 2500 N\,s/m$^{b}$ \\
+Coulomb friction [N] & -- & 1900$^{b}$ \\
+Pump flow [L/min] & -- & 494 \\
 \hline
+\multicolumn{3}{l}{$^{a}$ arm pin / arm / bucket tip. $^{b}$ at the cylinder rod.}
 \end{tabular}
 \end{table}
 % Real-parameter column: m_b, Q, relief pressure, cylinder sizes OFFICIAL; front masses
