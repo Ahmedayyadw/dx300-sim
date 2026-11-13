@@ -1,0 +1,68 @@
+% ICEEE 2027, Track 2. IEEE conference format, 4-8 pages, 10 pt, double column.
+\documentclass[conference]{IEEEtran}
+
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage[hyphens]{url}
+
+\graphicspath{{figs/}}
+
+% One-line placeholder for content still to write. Remove before submission.
+\newcommand{\todo}[1]{\textcolor{red}{\textbf{TODO:} #1}}
+
+\begin{document}
+
+\title{Energy--Accuracy Trade-offs of Soft Actor-Critic Control\\
+for a DX300 Excavator Boom}
+
+\author{\IEEEauthorblockN{Ahmed Ayyad}
+\IEEEauthorblockA{\todo{affiliation, city, country, e-mail}}}
+
+\maketitle
+
+% 1 Abstract
+\begin{abstract}
+\todo{150--250 words: problem, SAC with energy weight $w$, placeholder vs.\ real
+plant, 100 unseen scenarios, headline energy/accuracy numbers vs.\ PID, Lab 12
+verdict.}
+\end{abstract}
+
+\begin{IEEEkeywords}
+\todo{4--6 keywords, e.g.\ excavator, reinforcement learning, SAC, energy efficiency, hydraulics.}
+\end{IEEEkeywords}
+
+% 2 Introduction
+\input{sec2_intro}
+
+% 3 Related work
+\input{sec3_related}
+
+% 4-7 System model, Method, Experiments, Results
+\input{sec4_system_model}
+
+\input{sec5_method}
+
+\input{sec6_experiments}
+
+\input{sec7_results}
+
+% 8 Discussion and limitations
+\section{Discussion and Limitations}
+\label{sec:discussion}
+\todo{Why SAC gains shrink on the real plant, energy vs.\ worst-case error,
+sim-to-real gap, single-joint scope, no hardware test.}
+
+% 9 Conclusion and future work
+\section{Conclusion and Future Work}
+\label{sec:conclusion}
+\todo{Key findings in 3--4 sentences; next steps: full arm (boom, arm, bucket),
+3D digital twin, hardware validation.}
+
+% Uncomment at the first \cite: BibTeX errors out on a paper with no citations.
+\bibliographystyle{IEEEtran}
+\bibliography{refs}
+
+\end{document}

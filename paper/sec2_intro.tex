@@ -1,0 +1,41 @@
+\section{Introduction}
+\label{sec:intro}
+
+Hydraulic excavators spend a large part of their working cycle raising and lowering the boom
+against the weight of the boom, arm and bucket. Most work on reducing this energy changes the
+machine itself, through hybrid hydraulic architectures or energy recovery on the boom
+\cite{casoli_hydraulic_2016,li_novel_2020}. A cheaper lever is the controller: for the same
+hydraulic circuit, the way the boom is driven to its target decides how much work is spent on
+overshoot, oscillation and braking.
+
+Reinforcement learning (RL) can trade accuracy against energy directly through its reward, and
+has been applied to excavator automation \cite{kurinov2020excavator,egli2022excavator}.
+Two questions, however, decide whether such a controller is worth using on a real machine.
+First, it must be compared with a well-tuned conventional controller on the same test
+conditions, not only with itself. Second, the comparison must hold when the model has the
+machine's real parameters: a policy that looks robust on a rough model may lose its advantage
+once the model is realistic.
+
+This paper studies both questions for the boom of a 30-tonne-class Doosan DX300 excavator, using
+Soft Actor-Critic (SAC) \cite{haarnoja2018sac}. The contributions are:
+\begin{itemize}
+\item an energy--accuracy study of plain and residual SAC with domain randomisation for boom
+positioning, with the energy weight chosen from a sweep and every result compared with tuned PID
+baselines on 100 unseen scenarios;
+\item a two-stage evaluation, first on a placeholder plant and then on a plant whose parameters
+come from a Simscape model of the DX300 boom and front attachment, validated against that
+model; on the placeholder plant SAC buys robustness at an energy cost, but on the real-parameter
+plant a PID with an online payload estimate misses no move and uses less energy than every SAC
+policy;
+\item an energy-floor analysis that locates the remaining energy gap of the best controllers in
+overshoot and oscillation excited by sensor noise, which sets a concrete target for future
+learning-based control.
+\end{itemize}
+
+Section~\ref{sec:related} reviews related work. Section~\ref{sec:model} describes the boom model
+and its two parameter sets, Section~\ref{sec:method} the learning and baseline controllers, and
+Section~\ref{sec:exp} the experiments. Section~\ref{sec:results} presents the results,
+Section~\ref{sec:discussion} discusses them and Section~\ref{sec:conclusion} concludes.
+% "30-tonne class": trade press calls the DX300LC a 30 t excavator
+% (theconstructionindex.co.uk/news/view/doosan-ups-the-spec-on-30t-excavator); confirm the
+% operating weight of the quarry's variant from the Develon spec sheet.

@@ -1,0 +1,51 @@
+\section{Experiments}
+\label{sec:exp}
+
+\subsection{Scenario sets and metrics}
+Controllers are tuned and selected on a fixed set of 20 scenarios and evaluated on 100 unseen
+scenarios (start and target angles drawn with a different random seed). An episode lasts 10\,s.
+Accuracy is measured at the boom tip: the tip error is the boom length times the final angle
+error, $6.245\,\mathrm{m}\times|e|$, so $1^\circ$ corresponds to 10.9\,cm.
+A move \emph{misses} when its tip error exceeds 20\,cm. This tolerance is a design assumption
+for coarse boom positioning (e.g.\ moving into position before a dig), not a published
+standard; fine grading is done with the arm and bucket.
+Energy is the mechanical work per move (Section~\ref{sec:model}).
+SAC results are averaged over three seeds (mean of the per-seed means, worst of the per-seed
+maxima). All reported evaluations integrate the plant with 10 substeps.
+% Tuning set: RNG seed 7; unseen set: RNG seed 123.
+
+\subsection{Experiments on the placeholder plant}
+\begin{enumerate}
+\item \emph{Energy weight sweep:} SAC trained with ten energy weights $w\in[0,2]$ to locate the
+knee of the accuracy--energy trade-off and choose $w$ (Section~\ref{sec:method}).
+\item \emph{Generalisation:} the selected policies on the 100 unseen scenarios inside the
+trained range, and on 100 scenarios with targets outside it.
+\item \emph{Robustness:} model errors not seen in the first training: boom mass $\times0.42$
+(boom only, without the front attachment), a payload step $\times1.2$, an angle-dependent torque
+limit, sensor noise up to $1^\circ$ and inertia $\times0.38$.
+\item \emph{Baselines:} PID with gravity feed-forward, with and without integral action.
+\item \emph{Robust retraining:} plain and residual SAC with domain randomisation for
+$w\in\{0, 0.1, 0.3\}$, evaluated on all of the above (Table~\ref{tab:results1}).
+\end{enumerate}
+
+\subsection{Experiments on the real-parameter plant}
+The PID baseline was retuned for the real-parameter plant, and three operating points
+(fast, balanced, economical) were taken from its energy--move-time Pareto front.
+Plain and residual SAC were then trained with the randomisation of Section~\ref{sec:method}
+($w=0.1$), and residual SAC once more with sensor noise in training.
+All controllers were evaluated on the same 72 test rows: nine single conditions
+(nominal; sensor noise of $0.2^\circ$, $0.5^\circ$ and $1^\circ$; 5\,\% torque noise;
+inertia $\times0.38$ and $\times1.5$; cylinder friction $\times0.5$ and $\times2$)
+and nine combined cases (each sensor noise level with 5\,\% torque noise and one of three
+inertia/friction pairs), each with four payload variants: a full bucket (3406\,kg) and,
+at $t=5$\,s, a half-full bucket filled up (2263$\to$3406\,kg), an empty bucket filled
+(1120$\to$3406\,kg) and a full bucket dumped (3406$\to$1120\,kg).
+A row \emph{breaks} when more than 5\,\% of its 100 moves miss and is \emph{degraded}
+between 1 and 5\,\%.
+
+To judge how much energy a better controller could still save, each move is compared with an
+\emph{energy floor}: the least mechanical work of a monotone, rest-to-rest move from start to
+target, i.e.\ the change of potential energy plus the friction work for a raise, and minus the
+largest friction help for a lowering move. The gap to the floor is reported in percent.
+% Floor: rl/11_real_plant_tuning.md section 1. At short move times the floor is a lower bound,
+% so the gap is an upper bound on what a better controller can gain.
