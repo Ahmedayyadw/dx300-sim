@@ -1,0 +1,97 @@
+% ICEEE 2027, Track 2. IEEE conference format, 4-8 pages, 10 pt, double column.
+\documentclass[conference]{IEEEtran}
+
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{url}
+
+\graphicspath{{figs/}}
+
+% One-line placeholder for content still to write. Remove before submission.
+\newcommand{\todo}[1]{\textcolor{red}{\textbf{TODO:} #1}}
+
+\begin{document}
+
+\title{Energy--Accuracy Trade-offs of Soft Actor-Critic Control\\
+for a DX300 Excavator Boom}
+
+\author{\IEEEauthorblockN{Ahmed Ayyad}
+\IEEEauthorblockA{\todo{affiliation, city, country, e-mail}}}
+
+\maketitle
+
+% 1 Abstract
+\begin{abstract}
+\todo{150--250 words: problem, SAC with energy weight $w$, placeholder vs.\ real
+plant, 100 unseen scenarios, headline energy/accuracy numbers vs.\ PID, Lab 12
+verdict.}
+\end{abstract}
+
+\begin{IEEEkeywords}
+\todo{4--6 keywords, e.g.\ excavator, reinforcement learning, SAC, energy efficiency, hydraulics.}
+\end{IEEEkeywords}
+
+% 2 Introduction
+\section{Introduction}
+\todo{Motivation (excavator energy use), gap (RL energy-accuracy trade-off on a
+validated hydraulic boom model), contributions as a bullet list, paper outline.}
+
+% 3 Related work
+\section{Related Work}
+\todo{Excavator boom control (PID, MPC), RL for hydraulic manipulators, energy-aware
+reward shaping, residual RL, domain randomization for robustness.}
+
+% 4 System model
+\section{System Model}
+\label{sec:system}
+\todo{DX300 boom geometry with pins A--D (boom length from dx300\_params.py),
+rigid-body and cylinder dynamics, placeholder plant vs.\ real hydraulic plant
+(Lab 08a), real-plant validation against reference data (Lab 10c).}
+
+% 5 Method
+\section{Method}
+\label{sec:method}
+\todo{SAC setup (observations, actions, networks), reward with energy weight $w$,
+residual SAC on top of PID vs.\ plain SAC, randomized training (mass, torque, noise).}
+
+% 6 Experiments
+\section{Experiments}
+\label{sec:experiments}
+\todo{Labs 03--08b on the placeholder plant; Labs 10--12 on the real plant;
+evaluation on 100 unseen scenarios $\times$ 72 rows; baselines PID and PID+I; metrics.}
+
+% 7 Results
+\section{Results}
+\label{sec:results}
+\todo{Table~\ref{tab:placeholder} (placeholder plant), Fig.~1--3 (energy vs.\
+robustness, robustness bars, payload trajectory), Lab 12 real-plant table, Lab 10c
+validation figure.}
+
+\begin{table*}[t]
+\centering
+\caption{Placeholder plant: tracking error and energy over 100 unseen scenarios
+(mean of 10 seeds).}
+\label{tab:placeholder}
+\input{table1.tex}
+\end{table*}
+
+% 8 Discussion and limitations
+\section{Discussion and Limitations}
+\label{sec:discussion}
+\todo{Why SAC gains shrink on the real plant, energy vs.\ worst-case error,
+sim-to-real gap, single-joint scope, no hardware test.}
+
+% 9 Conclusion and future work
+\section{Conclusion and Future Work}
+\label{sec:conclusion}
+\todo{Key findings in 3--4 sentences; next steps: full arm (boom, arm, bucket),
+3D digital twin, hardware validation.}
+
+% Uncomment at the first \cite: BibTeX errors out on a paper with no citations.
+% \bibliographystyle{IEEEtran}
+% \bibliography{refs}
+
+\end{document}

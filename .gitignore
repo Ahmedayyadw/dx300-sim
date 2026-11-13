@@ -30,6 +30,8 @@ codegen/
 *.synctex.gz
 *.toc
 *.out
+*.log
+paper/main.pdf
 
 # OS / editor
 .DS_Store
