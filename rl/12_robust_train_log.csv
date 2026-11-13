@@ -1,0 +1,10 @@
+config,w,seed,train_s
+residual,0.1,0,9924.6
+residual,0.1,1,6083.9
+residual,0.1,2,769.1
+plain,0.1,0,753.8
+plain,0.1,1,762.8
+plain,0.1,2,746.3
+residual_noise,0.1,0,857.7
+residual_noise,0.1,1,872.4
+residual_noise,0.1,2,940.4
