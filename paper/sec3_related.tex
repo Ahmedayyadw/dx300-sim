@@ -1,0 +1,27 @@
+\section{Related Work}
+\label{sec:related}
+
+\textbf{Excavator modelling.} Mechanical and hydraulic models of the excavator manipulator are
+reviewed in \cite{xu_review_2016}. Multibody formulations of the front attachment
+\cite{noauthor_dynamical_2017} and dynamic simulations that determine joint reaction forces and
+cylinder driving forces \cite{dang_tan_dynamic_2020} describe the mechanical side; nonlinear
+models of the hydraulic system are simulated and validated in \cite{casoli_simulation_2015}.
+Estimating the bucket-tip position from the measured boom, stick and bucket motion is studied in
+\cite{sun_analysis_2020}. This work uses a single-joint boom model with parameters from a
+Simscape multibody/hydraulic model, which keeps reinforcement-learning training fast.
+
+\textbf{Energy efficiency.} Energy saving in excavators is mostly addressed in the hydraulic
+circuit, for example with hydraulic hybrid architectures \cite{casoli_hydraulic_2016} or with
+energy recovery that combines a flywheel and flow regeneration on the boom
+\cite{li_novel_2020}. This paper instead asks how much energy the \emph{controller} of an
+unmodified boom can save, and measures it against a computed energy floor.
+
+\textbf{Learning-based excavator control.} Reinforcement learning has been combined with
+multibody dynamics to automate excavation \cite{kurinov2020excavator}, and applied to the
+control of hydraulic excavator arms \cite{egli2022excavator}. This work uses Soft Actor-Critic
+\cite{haarnoja2018sac}, residual reinforcement learning on top of a conventional controller
+\cite{johannink2019residual}, and dynamics randomisation for robustness to model error
+\cite{peng2018dr}, and compares the learned policies with tuned PID baselines on the same test
+conditions, including a plant with real machine parameters.
+% NOTE: sentences describe the cited papers at title level; read each abstract and sharpen.
+% noauthor_dynamical_2017 has no author in Zotero: fix it there and re-export.
