@@ -23,3 +23,9 @@ residual,0.3,2,1406.8
 residual,1.0,1,1429.7
 residual,1.0,0,1416.8
 residual,1.0,2,1416.4
+residual_eco,0.03,0,1425.7
+residual_eco,0.03,2,1426.4
+residual_eco,0.03,1,1467.9
+residual_eco,0.1,0,1478.8
+residual_eco,0.1,2,1479.0
+residual_eco,0.1,1,1505.0
