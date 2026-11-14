@@ -151,17 +151,24 @@ class BoomEnvReal(gym.Env):
     payload     None or (step, m_tip_after): the tip mass changes at that control step
     j_scale     factor on J (stress test; the plant's J, not the controller's)
     fric_scale  factor on the cylinder friction F_c and c_v (stress test)
+    r_scale     factor on the moment arm r(theta) (Lab 12g geometry sensitivity): scales the
+                torque limits, the friction torque (F_c r, c_v r^2) and the flow speed limit
+    g_scale     factor on the gravity torque (Lab 12g: CoM and mass lumping)
+                r_scale, g_scale and j_scale act on the plant only; the controllers keep the
+                nominal model. With all factors 1.0 the plant is unchanged bit for bit.
     info of step(): tau_cmd, tau_cyl (delivered torque, mean over the step) [N m], flow_lim and
     torque_lim (substeps of this step on each limit), flow_violation (substeps where 330 bar
     could not hold the speed limit).
     """
     SUBSTEPS = 10
 
-    def __init__(self, w_energy=0.05, m_tip=M_TIP_NOM_KG, payload=None, j_scale=1.0, fric_scale=1.0):
+    def __init__(self, w_energy=0.05, m_tip=M_TIP_NOM_KG, payload=None, j_scale=1.0, fric_scale=1.0,
+                 r_scale=1.0, g_scale=1.0):
         self.dt, self.max_steps = 0.05, 200                       # s, steps (10 s), as BoomEnv
         self.th_min, self.th_max = TH_MIN, TH_MAX
         self.m_tip0, self.m_tip, self.payload = float(m_tip), float(m_tip), payload
         self.j_scale, self.fric_scale = j_scale, fric_scale
+        self.r_scale, self.g_scale = r_scale, g_scale
         self.w_energy = w_energy
         self.action_space = spaces.Box(-1.0, 1.0, (1,), np.float32)
         self.observation_space = spaces.Box(-np.inf, np.inf, (3,), np.float32)
@@ -194,10 +201,11 @@ class BoomEnvReal(gym.Env):
         tau_sum, n_flow, n_torque, n_viol = 0.0, 0, 0, 0
         tau_cmd = 0.0
         for _ in range(self.SUBSTEPS):
-            r = _interp(_R, th)
-            t_up, t_dn = _interp(_TAU_UP, th), _interp(_TAU_DOWN, th)
+            r = self.r_scale * _interp(_R, th)
+            t_up = self.r_scale * _interp(_TAU_UP, th)
+            t_dn = self.r_scale * _interp(_TAU_DOWN, th)
             tau_cmd = u * t_up if u >= 0.0 else u * t_dn
-            tau_g = G * (cc * math.cos(th) - cs * math.sin(th))
+            tau_g = self.g_scale * G * (cc * math.cos(th) - cs * math.sin(th))
             f_c = self.fric_scale * F_COULOMB_N * r               # Coulomb torque
             b = self.fric_scale * C_VISC_NSM * r * r              # viscous coefficient
             drive = tau_cmd - tau_g - b * om
