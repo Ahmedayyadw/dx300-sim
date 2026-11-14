@@ -8,3 +8,9 @@ plain,0.1,2,746.3
 residual_noise,0.1,0,857.7
 residual_noise,0.1,1,872.4
 residual_noise,0.1,2,940.4
+residual_eco,0.03,0,1425.7
+residual_eco,0.03,2,1426.4
+residual_eco,0.03,1,1467.9
+residual_eco,0.1,0,1478.8
+residual_eco,0.1,2,1479.0
+residual_eco,0.1,1,1505.0
