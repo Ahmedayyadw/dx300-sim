@@ -38,6 +38,16 @@ All real-plant numbers are model outputs (ESTIMATED), as their source files stat
 | 4 notes | 20.7–34.7 % vs 1–10 % | Residual SAC on sched vs sched alone, combined rows (09e) | `README.md` (Lab 09d/09e row); `rl/09e_comparison.md` |
 | 4 figure | Fig 1 | Energy vs worst-variant miss share (placeholder plant) | `paper/figs/fig1_energy_vs_robustness.png` (reused, not regenerated) |
 | 9 notes | T_w = 0.025 s; gap 23.8 % vs 24.0 % | Lab 12a filter choice, tuning set | `rl/12_filter_choice.json` |
+| 5, 10 | w = 0.03 | Energy weight of the training reward, same for every learner | `rl/13_benchmark.md`, header |
+| 5 | 100k steps; 1.01 % and 24.34 % | Misses over 20 cm of SAC and PPO at the same budget | `rl/13_benchmark.md`, 13c table |
+| 5 notes | 25.86 % | Misses over 20 cm of TD3 | `rl/13_benchmark.md`, 13c table |
+| 5 notes | u = clip(u_balanced + a, −1, 1); [θ, ω, e, ∫e dt]; −(e² + 0.01 ω² + w P / P_REF) | Residual action, observation and reward as run in Lab 12 and Lab 13 | `rl/boom_env_real_robust.py` (docstring) |
+| 5 notes | 100,000 steps | Training budget of the Lab 12 SAC models | `README.md` (Limitations, "Training budget"); `rl/12_robust_train.py` |
+| 10 | seeds 0/1/2; 100k steps; 1M transitions; 10/20/30 cm | Seeds, online budget, offline dataset, miss thresholds | `rl/13_benchmark.md` ("Setup and changes", 13c table); `rl/13_common.py` (`SEEDS`) |
+| 10 box | 100 unseen scenarios; 18 conditions × 4 variants; noise 0.2° / 0.5° / 1.0° | The 72 evaluation rows of the Lab 12e protocol | `rl/12_eval.py` (`ROWS72`), `rl/10_sched_real.py` (`GROUPS`, `VARIANTS`); noise levels also in `rl/13_benchmark.md`, 13d table |
+| 10 notes | 100,352 steps; 1M steps; noise 0.1; 100k and 300k transitions; 7200 moves | PPO stop point, extra PPO row, dataset noise, dataset-size study, moves per controller and seed | `rl/13_benchmark.md` ("Setup and changes", "Offline dataset", header) |
+| 10 notes | "no dataset episode starts from an unseen scenario" | Assertion in the dataset script | `rl/13_dataset.py` (`check_unseen`) |
+| 10 notes | 300,000 steps, gain-scheduler action | The earlier proposal that Lab 13 did not follow | `docs/12_sac_real_plant.md` section 2.6 |
 | 6–8 pill | 100 unseen scenarios × 72 rows | Lab 12e protocol, 7200 moves per controller and seed | `rl/13_benchmark.md`, header |
 | 6 table, 7, 11 | 0.00 % / 2.1 cm / 159.1 kJ / 20.0 % | Economical PID: misses over 20 cm, mean error, E_mech, energy above the floor | `rl/13_benchmark.md`, 13c table |
 | 6 table, 11 | 0.00 % / 1.4 cm / 167.5 kJ / 26.4 % | Balanced PID, same four columns | `rl/13_benchmark.md`, 13c table |
@@ -75,7 +85,8 @@ All real-plant numbers are model outputs (ESTIMATED), as their source files stat
 | 8 figure | Fig. 4 | Command activity against oscillation energy | `paper/figs/lab13/fig4_smoothness_vs_oscillation.png` (reused) |
 | 11 figure | Fig. 5 | Reward return against energy above the floor | `paper/figs/lab13/fig5_reward_mismatch.png` (reused) |
 
-Slides 6, 7, 8 and 11 were rewritten on 2026-11-15 with the Lab 13 results. Every number in their text
+Slides 6, 7, 8 and 11 were rewritten on 2026-11-15 with the Lab 13 results. Slides 5, 9 and 10 were brought in line
+with what Lab 13 did on the same day. Every number in their text
 and notes is in `rl/13_benchmark.md`, except the two rows above that name another file.
 
 Numbers that appear only inside the four figures and are not in `rl/13_benchmark.md`

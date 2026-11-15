@@ -1,7 +1,7 @@
 # DX300 boom: SAC, alternatives and a benchmark — outline
 
 12 slides, 16:9. Slides 6–8 and 11 hold the measured Lab 13 results (updated 2026-11-15); before that,
-slides 6–8 were expectations from the literature. Slides 5, 9 and 10 still describe the plan made before Lab 13.
+slides 6–8 were expectations from the literature. Slides 5, 9 and 10 were brought in line with what Lab 13 did.
 Every number has its source in `slides/sources.md`.
 
 ## 1. Problem: hold the boom on target with less energy
@@ -41,10 +41,11 @@ Every number has its source in `slides/sources.md`.
 
 ## 5. Why RL here, and why SAC
 - Left for learning: fast-move excess and noise oscillation
-- Energy above the floor goes in the reward directly
-- Continuous gain action: SAC is built for continuous control
+- Reward: tracking error, speed and actuator power (w = 0.03)
+- Action: one continuous residual on the balanced PID command
 - Entropy term: broad exploration, less seed sensitivity [1, 2]
 - Replay buffer reuses every step: fewer simulator steps
+- Measured at 100k steps: SAC 1.01 % misses, PPO 24.34 % (slide 7)
 
 ## 6. Lab 13: no learner beats the economical PID — "Measured in Lab 13 · 100 unseen scenarios × 72 rows"
 - Figure: paper/figs/lab13/fig1_energy_vs_error.png
@@ -91,20 +92,22 @@ Every number has its source in `slides/sources.md`.
 (The qualitative method table of the earlier slide 8 is removed. The methods that were not tested are
 named on slide 7 and in its speaker notes.)
 
-## 9. Candidate benchmarks
-- (a) Own real plant: Lab 11 PIDs, energy floor, filtered PID
+## 9. Benchmark choice: why our own plant
+- (a) Own real plant: PID points and energy floor. Used in Lab 13
 - (b) Spinelli 2024 [21]: PPO, real handler, slew 0.46° vs PI 12.38°
 - (b) Kurinov 2020 [22]: PPO-CMA, simulation, 67–97 % bucket mass
 - (b) Hu 2026 [23]: simulated 21 t, 20–22 % less energy, relative
 - (c) DMC [15] / D4RL [14]: code sanity check, not task
+- Bold line: Fair comparison only in (a), so Lab 13 uses it. (b) differs in machine, task and metric; (c) has no boom.
 
-## 10. Proposed benchmark protocol
-- Same real plant, Lab 12 training distribution, unseen set
-- Same seeds 0/1/2 and step budget per algorithm
-- Metrics: gap to floor, reach time, miss %, kJ
-- Run: SAC, TD3, TQC, PPO; Lab 11 PID, filtered PID
-- Report IQM with confidence intervals (rliable) [16, 17]
-- Box: 100 unseen scenarios, 18 conditions × 4 variants; optional TD3+BC / IQL
+## 10. Benchmark protocol used in Lab 13
+- Same plant, observation and reward (w = 0.03) for all
+- Every learner: residual on the balanced PID, seeds 0/1/2
+- Online: SAC, TD3, PPO, 100k steps, SB3 defaults
+- Offline: BC, CQL, IQL on 1M PID transitions (d3rlpy)
+- Metrics: misses at 10/20/30 cm, error, E_mech, gap to floor
+- Paired Wilcoxon test against the economical PID
+- Box: test rows (Lab 12e protocol): 100 unseen scenarios, 18 conditions × 4 variants (baseline · fill_half · fill · dump), noise 0.2° / 0.5° / 1.0° · J · friction. Not done: TQC, tuning per algorithm, IQM with intervals [16, 17]
 
 ## 11. Reward mismatch, and two questions
 - Figure: paper/figs/lab13/fig5_reward_mismatch.png (hollow markers = return during training; no return exists for BC, CQL, IQL)
