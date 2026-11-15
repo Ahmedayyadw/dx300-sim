@@ -37,17 +37,67 @@ All real-plant numbers are model outputs (ESTIMATED), as their source files stat
 | 4 notes | 100 % → 1 %, 68.5 kJ | Payload-aware PID (Lab 09c) | `README.md` (Lab 09c row); `rl/09c_comparison.md` |
 | 4 notes | 20.7–34.7 % vs 1–10 % | Residual SAC on sched vs sched alone, combined rows (09e) | `README.md` (Lab 09d/09e row); `rl/09e_comparison.md` |
 | 4 figure | Fig 1 | Energy vs worst-variant miss share (placeholder plant) | `paper/figs/fig1_energy_vs_robustness.png` (reused, not regenerated) |
-| 5, 6 notes | ~12 min per Stage 1 run | Training time | `README.md`; `rl/08b_train_log.csv` |
-| 9, 11 notes | T_w = 0.025 s; gap 23.8 % vs 24.0 % | Lab 12a filter choice, tuning set | `rl/12_filter_choice.json` |
-| 11 | g = 4^a, 0.25–4; Kp 0.375–6, Kd 0.25–4 | Lab 12 action range | `docs/12_sac_real_plant.md` section 2.1 |
-| 11 | 29 inputs, 8 steps = 0.4 s | Observation | `docs/12_sac_real_plant.md` section 2.3 |
-| 11 notes | 0.1, 0.05, 0.005, 5·min(d, 3)² | Reward terms | `docs/12_sac_real_plant.md` section 2.4 |
-| 11 | w_E 0.06 / 0.12 | Energy weights | `docs/12_sac_real_plant.md` sections 2.4, 2.6 |
-| 11 | seeds 0–2, 300k steps; 2 × 256; buffer 1,000,000 | SAC settings | `docs/12_sac_real_plant.md` section 2.6; `rl/12_sac_train.py` (`SEEDS`, `STEPS`) |
-| 11 notes | J 0.38–1.5, friction 0.5–2, noise 0–1.0°, step 4–7 s | Training distribution | `docs/12_sac_real_plant.md` section 2.5 |
-| 11 box | ≥ 25 % relative, +0.1 s, 5 %, 1 point, 1 kJ | Lab 12 goal | `docs/12_sac_real_plant.md` (goal, lines 5–7) and section 3 |
-| 11 notes | dp_valve 20 bar, η_pump 0.85 (ASSUMED) | E_pump parameters | `rl/11_real_plant_tuning.md` (status of the values) |
-| 11 | "Training now" | Status | stated by the user on 2026-11-12; `docs/12_sac_real_plant.md` line 3 still says "design, waiting for approval" |
+| 9 notes | T_w = 0.025 s; gap 23.8 % vs 24.0 % | Lab 12a filter choice, tuning set | `rl/12_filter_choice.json` |
+| 5, 10 | w = 0.03 | Energy weight of the training reward, same for every learner | `rl/13_benchmark.md`, header |
+| 5 | 100k steps; 1.01 % and 24.34 % | Misses over 20 cm of SAC and PPO at the same budget | `rl/13_benchmark.md`, 13c table |
+| 5 notes | 25.86 % | Misses over 20 cm of TD3 | `rl/13_benchmark.md`, 13c table |
+| 5 notes | u = clip(u_balanced + a, −1, 1); [θ, ω, e, ∫e dt]; −(e² + 0.01 ω² + w P / P_REF) | Residual action, observation and reward as run in Lab 12 and Lab 13 | `rl/boom_env_real_robust.py` (docstring) |
+| 5 notes | 100,000 steps | Training budget of the Lab 12 SAC models | `README.md` (Limitations, "Training budget"); `rl/12_robust_train.py` |
+| 10 | seeds 0/1/2; 100k steps; 1M transitions; 10/20/30 cm | Seeds, online budget, offline dataset, miss thresholds | `rl/13_benchmark.md` ("Setup and changes", 13c table); `rl/13_common.py` (`SEEDS`) |
+| 10 box | 100 unseen scenarios; 18 conditions × 4 variants; noise 0.2° / 0.5° / 1.0° | The 72 evaluation rows of the Lab 12e protocol | `rl/12_eval.py` (`ROWS72`), `rl/10_sched_real.py` (`GROUPS`, `VARIANTS`); noise levels also in `rl/13_benchmark.md`, 13d table |
+| 10 notes | 100,352 steps; 1M steps; noise 0.1; 100k and 300k transitions; 7200 moves | PPO stop point, extra PPO row, dataset noise, dataset-size study, moves per controller and seed | `rl/13_benchmark.md` ("Setup and changes", "Offline dataset", header) |
+| 10 notes | "no dataset episode starts from an unseen scenario" | Assertion in the dataset script | `rl/13_dataset.py` (`check_unseen`) |
+| 10 notes | 300,000 steps, gain-scheduler action | The earlier proposal that Lab 13 did not follow | `docs/12_sac_real_plant.md` section 2.6 |
+| 6–8 pill | 100 unseen scenarios × 72 rows | Lab 12e protocol, 7200 moves per controller and seed | `rl/13_benchmark.md`, header |
+| 6 table, 7, 11 | 0.00 % / 2.1 cm / 159.1 kJ / 20.0 % | Economical PID: misses over 20 cm, mean error, E_mech, energy above the floor | `rl/13_benchmark.md`, 13c table |
+| 6 table, 11 | 0.00 % / 1.4 cm / 167.5 kJ / 26.4 % | Balanced PID, same four columns | `rl/13_benchmark.md`, 13c table |
+| 6 table, 7 | 24.34 % / 14.5 cm / 318.6 kJ / 140.4 % | PPO 100k (stops at 100,352 steps) | `rl/13_benchmark.md`, 13c table |
+| 6 table, 7 | 7.42 % / 7.8 cm / 216.2 kJ / 63.1 % | PPO 1M, not equal budget | `rl/13_benchmark.md`, 13c table |
+| 6 table, 7 | 1.01 % / 5.7 cm / 191.5 kJ / 44.5 % | SAC 100k (Lab 12 models, row taken from `rl/12e_moves.csv.gz`) | `rl/13_benchmark.md`, 13c table |
+| 6 table, 7 | 25.86 % / 13.5 cm / 184.3 kJ / 39.0 % | TD3 100k | `rl/13_benchmark.md`, 13c table |
+| 6 table, 7 | 0.00 % / 2.2 cm / 162.6 kJ / 22.6 % | BC, 1M transitions | `rl/13_benchmark.md`, 13c table |
+| 6 table, 7 | 10.94 % / 8.0 cm / 190.8 kJ / 43.9 % | CQL, 1M transitions | `rl/13_benchmark.md`, 13c table |
+| 6 table, 7 | 0.02 % / 2.4 cm / 164.1 kJ / 23.8 % | IQL, 1M transitions | `rl/13_benchmark.md`, 13c table |
+| 6 | +1.13 kJ, p = 6.3e-208 | BC against the economical PID: paired Wilcoxon, median difference of E_mech over 7200 moves | `rl/13_benchmark.md`, 13c table |
+| 6 notes | w = 0.03, 3 seeds, 7200 moves | Setup of every learner | `rl/13_benchmark.md`, header and "Setup and changes" |
+| 6 notes | "beats" rule | No more misses over 20 cm, lower E_mech with p < 0.05, no significantly larger error (ASSUMED) | `rl/13_benchmark.md`, 13c text |
+| 7 | 100k steps; 10× the steps; 1M PID transitions | Online budget, PPO 1M row, offline dataset | `rl/13_benchmark.md`, "Setup and changes", "Offline dataset" |
+| 7 notes | ± 16.43 | TD3: spread of misses over 20 cm between the 3 seeds | `rl/13_benchmark.md`, 13c table |
+| 7 notes | noise 0.1 | Gaussian noise on the PID command in the dataset | `rl/13_benchmark.md`, "Offline dataset" |
+| 7 notes | 3.5 / 2.8 / 2.2 cm; 161.7 / 162.7 / 162.6 kJ | BC at 100k / 300k / 1M transitions | `rl/13_benchmark.md`, "Dataset size (offline)" |
+| 7 notes | action noise 0.1; observation and reward normalisation | Changes from the library defaults (TD3; PPO) | `rl/13_benchmark.md`, "Setup and changes" |
+| 8 | 4 to 32 times; 2.23 to 15.96 against 0.50 (1/s) | Mean abs(du/dt) of the online learners against the economical PID | `rl/13_benchmark.md`, 13d table and reading |
+| 8 | 55 to 70 % | Oscillation share of the energy above the floor, online learners | `rl/13_benchmark.md`, 13d table and reading |
+| 8 | 5.5 to 14.2 cm; 1.4 cm | Mean error without sensor noise: online learners; economical PID | `rl/13_benchmark.md`, 13d table and reading |
+| 8 | 0.55 | Mean abs(du/dt) of BC and of IQL | `rl/13_benchmark.md`, 13d table |
+| 8 | 0.76; 56 % | CQL: mean abs(du/dt); overshoot share of its energy above the floor | `rl/13_benchmark.md`, 13d table |
+| 8 notes | 0.64; 2.81; 4.75 | Mean abs(du/dt): balanced PID, SAC, PPO 1M | `rl/13_benchmark.md`, 13d table |
+| 8 notes | 51.7 to 186.1 kJ against 26.6 kJ | Energy above the floor: online learners, economical PID | `rl/13_benchmark.md`, 13d table and reading |
+| 8 notes | 0.8 cm; 7.6 cm | Largest change of the online learners' error from 0 to 1° noise; CQL error without noise | `rl/13_benchmark.md`, 13d reading and table |
+| 11 | w = 0.03 | Energy weight of the training reward | `rl/13_benchmark.md`, header |
+| 11 | −9.78 against −10.30 | Return per episode, balanced against economical PID, no noise, 300 training-distribution episodes | `rl/13_benchmark.md`, 13d reading ("Reward"); measured in `docs/13_benchmark.md` section 3 |
+| 11 notes | −10.22 against −10.41 | Mean return in the 1M dataset (with noise), balanced against economical behaviour | `rl/13_benchmark.md`, "Offline dataset" and 13d reading; `rl/13_dataset.csv` |
+| 11 notes | 39.0 to 140.4 % | Energy above the floor of the online learners | `rl/13_benchmark.md`, 13c table |
+| 11 notes | −(e² + 0.01 ω² + w P / P_REF) | Training reward | `rl/boom_env_real_robust.py` (docstring and `step`) |
+| 11 notes | "next step after the paper" | Learned gain scheduler | `README.md`, Roadmap |
+| 6 figure | Fig. 1 | Energy against tip error, all controllers | `paper/figs/lab13/fig1_energy_vs_error.png` (reused, not regenerated) |
+| 7 figure | Fig. 2 | Energy above the floor, grouped bars | `paper/figs/lab13/fig2_gap_to_floor.png` (reused) |
+| 8 figure | Fig. 4 | Command activity against oscillation energy | `paper/figs/lab13/fig4_smoothness_vs_oscillation.png` (reused) |
+| 11 figure | Fig. 5 | Reward return against energy above the floor | `paper/figs/lab13/fig5_reward_mismatch.png` (reused) |
+
+Slides 6, 7, 8 and 11 were rewritten on 2026-11-15 with the Lab 13 results. Slides 5, 9 and 10 were brought in line
+with what Lab 13 did on the same day. Every number in their text
+and notes is in `rl/13_benchmark.md`, except the two rows above that name another file.
+
+Numbers that appear only inside the four figures and are not in `rl/13_benchmark.md`
+(full list per figure: `paper/figs/lab13/README.md`):
+
+| Slide | Number(s) | Meaning | Source file |
+|---|---|---|---|
+| 6, 7 figures | fast PID point; 36.0 % | Fast PID: mean error, E_mech, energy above the floor | `rl/12_eval.csv` (72 rows of `new100`, `controller = fast`) |
+| 6 figure | 132.5 kJ | Mean energy floor (dashed line) | `rl/12_eval.csv`, `mean_floor_kJ` |
+| 8 figure | y axis | Oscillation energy = `excess_kJ` × `oscillation_share` / 100 | `rl/13_benchmark.csv` |
+| 11 figure | hollow markers, x axis | Training return of SAC, TD3 and PPO (exploration on) | `paper/figs/lab13/train_returns.csv`, read from the TensorBoard logs in `rl/tb/` |
 
 Numbers from published papers (slide 9 and notes) are listed with their reference below.
 
@@ -65,7 +115,6 @@ Numbers from published papers (slide 9 and notes) are listed with their referenc
 | 8 | Controlling Overestimation Bias with Truncated Mixture of Continuous Distributional Quantile Critics (TQC) | Kuznetsov et al. | 2020 | https://arxiv.org/abs/2005.04269 |
 | 9 | Conservative Q-Learning for Offline Reinforcement Learning | Kumar, Zhou, Tucker, Levine | 2020 | https://arxiv.org/abs/2006.04779 |
 | 10 | Offline Reinforcement Learning with Implicit Q-Learning | Kostrikov, Nair, Levine | 2021 | https://arxiv.org/abs/2110.06169 |
-| 11 | A Minimalist Approach to Offline Reinforcement Learning (TD3+BC, NeurIPS) | Fujimoto, Gu | 2021 | https://arxiv.org/abs/2106.06860 |
 | 12 | Offline Reinforcement Learning: Tutorial, Review, and Perspectives on Open Problems | Levine, Kumar, Tucker, Fu | 2020 | https://arxiv.org/abs/2005.01643 |
 | 13 | When to Trust Your Model: Model-Based Policy Optimization (MBPO, NeurIPS) | Janner, Fu, Zhang, Levine | 2019 | https://arxiv.org/abs/1906.08253 |
 | 14 | D4RL: Datasets for Deep Data-Driven Reinforcement Learning | Fu et al. | 2020 | https://arxiv.org/abs/2004.07219 |
@@ -92,4 +141,4 @@ Numbers from published papers (slide 9 and notes) are listed with their referenc
 ## [uncertain] — not cited on any slide
 
 - Egli, Hutter, "Towards RL-Based Hydraulic Excavator Automation", IROS 2020, and "A General Approach for the Automation of Hydraulic Excavator Arms Using Reinforcement Learning", IEEE RA-L 7(2):5679–5686, 2022. Found in search results only; the ETH, dblp and PDF pages could not be opened, so no DOI or numbers were verified. Mentioned by name only in the slide 9 and 12 speaker notes, marked [uncertain].
-- LQR / MPC statements on slide 8 are standard control knowledge with no citation.
+- MPC is named on slide 7 only as a method that was not tested; no citation.

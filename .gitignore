@@ -36,6 +36,7 @@ paper/main.pdf
 # OS / editor
 .DS_Store
 Thumbs.db
+.~lock.*#
 .vscode/
 .idea/
 matlab/excavator3d/base/
