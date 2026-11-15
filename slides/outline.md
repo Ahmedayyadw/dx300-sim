@@ -1,6 +1,7 @@
 # DX300 boom: SAC, alternatives and a benchmark — outline
 
-12 slides, 16:9. Slides 6–8 are expectations from the literature, not our results.
+12 slides, 16:9. Slides 6–8 and 11 hold the measured Lab 13 results (updated 2026-11-15); before that,
+slides 6–8 were expectations from the literature. Slides 5, 9 and 10 still describe the plan made before Lab 13.
 Every number has its source in `slides/sources.md`.
 
 ## 1. Problem: hold the boom on target with less energy
@@ -45,33 +46,50 @@ Every number has its source in `slides/sources.md`.
 - Entropy term: broad exploration, less seed sensitivity [1, 2]
 - Replay buffer reuses every step: fewer simulator steps
 
-## 6. Off-policy vs on-policy (expected, not our results)
-- SAC (off-policy) learns from a replay buffer of old data
-- PPO / TRPO / A2C (on-policy) need fresh rollouts per update [3–5]
-- Expect PPO: more simulator steps for similar score [1, 4]
-- Expect PPO: stable, but implementation details matter [19, 20]
-- Final cm and kJ for this task: unknown until measured
+## 6. Lab 13: no learner beats the economical PID — "Measured in Lab 13 · 100 unseen scenarios × 72 rows"
+- Figure: paper/figs/lab13/fig1_energy_vs_error.png
 
-## 7. Online vs offline RL (expected, not our results)
-- Now: online; the agent acts in the simulator while learning
-- Offline: learn only from logged machine data, no interaction
-- Methods: CQL, IQL, TD3+BC; benchmark datasets D4RL [9–11, 14]
-- Risk: policy leaves the data; values get overestimated [12]
-- Relevant once DX300 logs exist (Stage 2 quarry data)
+| Group | Controller | Miss > 20 cm % | Mean error cm | E_mech kJ | Above floor % |
+|---|---|---:|---:|---:|---:|
+| classical | Economical PID | 0.00 | 2.1 | 159.1 | 20.0 |
+| classical | Balanced PID | 0.00 | 1.4 | 167.5 | 26.4 |
+| online on-policy | PPO 100k | 24.34 | 14.5 | 318.6 | 140.4 |
+| online on-policy | PPO 1M * | 7.42 | 7.8 | 216.2 | 63.1 |
+| online off-policy | SAC 100k | 1.01 | 5.7 | 191.5 | 44.5 |
+| online off-policy | TD3 100k | 25.86 | 13.5 | 184.3 | 39.0 |
+| offline | BC | 0.00 | 2.2 | 162.6 | 22.6 |
+| offline | CQL | 10.94 | 8.0 | 190.8 | 43.9 |
+| offline | IQL | 0.02 | 2.4 | 164.1 | 23.8 |
 
-## 8. Other ways to solve it, and how they compare (expected, not our results)
-| Method | Sample eff. | Stability | Constraints | Needs model | Fit here |
-|---|---|---|---|---|---|
-| SAC (ours) | High | Good across seeds | Via reward | No | Good, in use |
-| TD3 / TQC | High | Good | Via reward | No | Good, cheap to test |
-| DDPG | High | Brittle | Via reward | No | Fair |
-| PPO / TRPO | Lower | Good, detail-sensitive | Via reward | No | Fair; domain standard |
-| MBPO | Higher than model-free | Medium | Via reward | Learned | Fair |
-| Offline: CQL / IQL / TD3+BC | No env steps | Bound by data | Via data | No | Later, with logs |
-| PID + feed-forward | No training | Good | Saturation only | Gravity term | Baseline (Lab 11) |
-| LQR / MPC | No training | Good | MPC: hard limits | Yes | Strong if model good |
+- Closest: BC. Same misses, but +1.13 kJ median (p = 6.3e-208)
+- Best online learner is still SAC: 1.01 % misses, 191.5 kJ
+- Footnote: * PPO 1M: 10× the steps, not equal budget. Offline rows: 1M transitions. Mean of 3 seeds.
 
-(The former separate "Other ways" bullet slide is merged here; its content is in the speaker notes.)
+## 7. On- vs off-policy, online vs offline: measured — "Measured in Lab 13 · 100 unseen scenarios × 72 rows"
+- Figure: paper/figs/lab13/fig2_gap_to_floor.png
+- On-policy vs off-policy (online, 100k steps)
+  - PPO: 24.34 % misses, 140.4 % above floor
+  - SAC: 1.01 % misses, 44.5 % above floor
+  - TD3: 25.86 % misses, 39.0 % above floor
+  - PPO with 10× the steps: 7.42 %, 63.1 %
+- Online vs offline (1M PID transitions)
+  - BC: 0.00 % misses, 22.6 % above floor
+  - IQL: 0.02 % misses, 23.8 % above floor
+  - CQL: 10.94 % misses, 43.9 % above floor
+- Bold line: Economical PID: 0.00 % misses, 20.0 % above floor. Offline is close to it because its data is PID data.
+- Footnote: Not tested: DDPG [6], TQC [8], TD3+BC [11], MBPO [13], MPC.
+
+## 8. Why the learners lose: oscillating commands — "Measured in Lab 13 · 100 unseen scenarios × 72 rows"
+- Figure: paper/figs/lab13/fig4_smoothness_vs_oscillation.png
+- Online learners move the valve 4 to 32 times more than the PID
+- Mean |du/dt|: 2.23 to 15.96 against 0.50 per second
+- 55 to 70 % of their energy above the floor is oscillation
+- Not sensor noise: 5.5 to 14.2 cm error with no noise (PID 1.4 cm)
+- BC and IQL are as smooth as the PID (0.55)
+- CQL is smooth (0.76), but 56 % of its excess is overshoot
+
+(The qualitative method table of the earlier slide 8 is removed. The methods that were not tested are
+named on slide 7 and in its speaker notes.)
 
 ## 9. Candidate benchmarks
 - (a) Own real plant: Lab 11 PIDs, energy floor, filtered PID
@@ -88,15 +106,18 @@ Every number has its source in `slides/sources.md`.
 - Report IQM with confidence intervals (rliable) [16, 17]
 - Box: 100 unseen scenarios, 18 conditions × 4 variants; optional TD3+BC / IQL
 
-## 11. Lab 12: SAC as a gain scheduler on the real plant
-- Action scales PID gains: g = 4^a, range 0.25–4
-- Zero-initialised actor: starts exactly as balanced PID
-- 29 measured inputs, 0.4 s history; no true state
-- Reward: error, time outside 20 cm, work above floor
-- SAC, w_E 0.06 / 0.12, seeds 0–2, 300k steps
-- Goal box (vs balanced PID + fix 2b, 100 unseen, 72 rows): gap to floor −25 % relative; move time ≤ +0.1 s; no row > 5 % miss; no row > 1 point worse; nominal row ≤ +1 kJ
-- Status: training now · results pending
-- Questions for you: PPO baseline? offline RL scope? energy metric?
+## 11. Reward mismatch, and two questions
+- Figure: paper/figs/lab13/fig5_reward_mismatch.png (hollow markers = return during training; no return exists for BC, CQL, IQL)
+- Reward (w = 0.03) ranks the balanced PID above the economical PID
+- Return −9.78 against −10.30, but 26.4 % against 20.0 % above the floor
+- So no learner is pushed toward the economical PID
+- Reward kept as in Lab 12, so the setup stays identical
+- Box, questions for Dr. Sina:
+  - (a) Is this framing right for the paper?
+  - (b) Should I test a corrected reward (Lab 14) before submission?
+
+(The Lab 12 gain-scheduler design of the earlier slide 11 is removed from the deck; it is in
+`docs/12_sac_real_plant.md`.)
 
 ## 12. References
 - [1]–[24], each with DOI or URL (see sources.md)
