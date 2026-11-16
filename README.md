@@ -123,7 +123,12 @@ pip install -r requirements.txt
 pytest
 ```
 
-The Lab 13 offline learners (BC, CQL, IQL) run in a separate environment, `.venv-d3rlpy`, with d3rlpy 2.8.1 ([docs/13_benchmark.md](docs/13_benchmark.md)). [TODO: requirements file for `.venv-d3rlpy`]
+The Lab 13 offline learners (BC, CQL, IQL) run in a separate environment, `.venv-d3rlpy`, with d3rlpy 2.8.1 ([docs/13_benchmark.md](docs/13_benchmark.md)). It is separate because d3rlpy pins gymnasium 1.0.0, while `.venv` has 1.4.0:
+
+```bash
+python -m venv .venv-d3rlpy
+.venv-d3rlpy/bin/pip install -r requirements-d3rlpy.txt
+```
 
 ## Usage
 
