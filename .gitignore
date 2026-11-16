@@ -40,3 +40,23 @@ Thumbs.db
 .vscode/
 .idea/
 matlab/excavator3d/base/
+
+# Extra virtual environments (Lab 13 offline learners use .venv-d3rlpy)
+.venv-*/
+venv/
+.env
+
+# Model checkpoints and offline-RL logs
+*.pt
+*.pth
+*.ckpt
+*.pkl
+*.d3
+d3rlpy_logs/
+
+# Python tooling caches and build output
+.mypy_cache/
+.coverage
+htmlcov/
+build/
+dist/
