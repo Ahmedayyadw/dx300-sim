@@ -6,7 +6,10 @@ authors:
   - family-names: Ayyad
     given-names: Ahmed
     affiliation: "Istanbul Okan University"
+    # TODO: orcid
 repository-code: "https://github.com/Ahmedayyadw/dx300-sim"
+url: "https://github.com/Ahmedayyadw/dx300-sim"
+# TODO: version and date-released, once the first release is tagged
 keywords:
   - reinforcement learning
   - soft actor-critic
