@@ -1,6 +1,10 @@
 # DX300 boom RL study
 
-> Energy vs accuracy trade-off for SAC control of a Doosan DX300 excavator boom, with PID baselines and a Simscape validation model.
+> Energy vs accuracy for learned control of a Doosan DX300 excavator boom in simulation: no learned controller (SAC, TD3, PPO, BC, CQL, IQL) beats a tuned PID with a payload estimator on both (PID: 0 % misses at 159.1 kJ).
+
+![Energy vs accuracy: mean energy per move against mean tip error for the PID points and the learned controllers](paper/figs/lab13/fig1_energy_vs_error.png)
+
+*Mean mechanical energy per move vs mean tip error on the real plant, with seed spread (3 seeds; PID points have no seeds). Lab 12e protocol: 100 unseen scenarios × 72 rows = 7200 moves per controller and seed. Dashed line: energy floor, 132.5 kJ. All values are simulation results; geometry and friction are ESTIMATED. Written by `python rl/13_figures.py`; sources in [paper/figs/lab13/README.md](paper/figs/lab13/README.md).*
 
 ![stable-baselines3](https://img.shields.io/badge/stable--baselines3-2.9.0-blue)
 ![PyTorch](https://img.shields.io/badge/PyTorch-2.14-EE4C2C?logo=pytorch&logoColor=white)
@@ -9,78 +13,22 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 ![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)
 
+## Overview
+
 Soft Actor-Critic (SAC, stable-baselines3) control of the boom of a Doosan DX300 hydraulic excavator, studying the trade-off between positioning accuracy and actuator energy. The plant is a single boom joint in simulation. This repo is Stage 1 of the master's thesis "AI-Based Fault Detection and Energy Management of a Hydraulic Excavator Using a Digital Twin" (Okan University).
 
-**Stage 1 result:** a tuned PID with gravity feed-forward uses the least energy on the nominal model (68.6 kJ, 1.0 % of moves over 20 cm), but misses 20 cm on 100 % of moves with Payload ×1.2. Domain-randomized SAC stays at 3.0–8.0 % under Payload ×1.2, at 100.8–173.6 kJ on the nominal model. SAC w=0.3 (100.8 kJ) is close to the energy of PID + I (97.7 kJ, 37 % misses under Payload ×1.2). Source: [paper/table1.md](paper/table1.md) and [rl/08b_eval_n10.csv](rl/08b_eval_n10.csv).
+## Results
 
 **Latest result (Labs 12–13, real plant, SAC and other learning methods vs PID):** on the plant built from the Lab 08a Simscape export, residual and plain SAC (w = 0.1, 3 seeds each, randomized mass, torque limit and inertia) were evaluated against the three Lab 11 PID points with the adaptive mass-estimate filter, on the Lab 11 protocol (100 unseen scenarios × 72 rows). Every PID point misses 0 % of moves with no degraded row; `economical` uses 159.1 kJ (20.0 % above the energy floor). Residual SAC misses 3.31 % (68 degraded rows, 4 broken) at 186.1 kJ (40.4 %); plain SAC misses 16.2 % (all 72 rows broken) at 186.2 kJ. Residual SAC trained with sensor noise (12n) uses less energy (173.7 kJ) but misses 24.6 %, also on the noise-free baseline row. No SAC model beats any PID point on both energy and accuracy, so on this plant the robustness advantage SAC showed on the placeholder plant does not hold: a PID with a payload estimator gives it at lower energy. The conclusion holds across energy weights w = 0 … 1 (Lab 12d), with the residual on the `economical` point, in pump energy and at 10/20/30 cm (Lab 12e; paired Wilcoxon p < 1e-100), under ± 20 % errors in moment arm, gravity torque, J and friction, where no SAC model is better on both metrics in any of 33 plants (Lab 12g), and with 3× the training steps (Lab 12h). Other learning methods in the setup of the best SAC do not beat the `economical` PID either: TD3 and PPO online, behaviour cloning, CQL and IQL offline (Lab 13); behaviour cloning comes closest, at 0 % misses and 162.6 kJ. Geometry and friction are ESTIMATED. Source: [rl/12_eval.md](rl/12_eval.md), [rl/13_benchmark.md](rl/13_benchmark.md); PID points and energy floor: [rl/11_real_plant_tuning.md](rl/11_real_plant_tuning.md).
 
-## Repo layout
+**Stage 1 result:** a tuned PID with gravity feed-forward uses the least energy on the nominal model (68.6 kJ, 1.0 % of moves over 20 cm), but misses 20 cm on 100 % of moves with Payload ×1.2. Domain-randomized SAC stays at 3.0–8.0 % under Payload ×1.2, at 100.8–173.6 kJ on the nominal model. SAC w=0.3 (100.8 kJ) is close to the energy of PID + I (97.7 kJ, 37 % misses under Payload ×1.2). Source: [paper/table1.md](paper/table1.md) and [rl/08b_eval_n10.csv](rl/08b_eval_n10.csv).
 
-```
-dx300sim/          DX300 parameters (dx300_params.py: boom length 6.245 m, pins, end stops) and boom geometry
-rl/                RL code and results
-  boom_env.py        1-DOF boom env (labs 02–07)
-  boom_env_robust.py randomized boom env, power reward, substeps option (labs 08b–09)
-  boom_env_real.py   boom env on the real plant from the Lab 08a Simscape export (labs 10–13)
-  boom_env_real_robust.py  real plant + 08b randomization, residual/plain SAC (lab 12), other learners (lab 13)
-  0N_*.py            numbered lab scripts, with their CSV / PNG / log results next to them
-  models/, tb/       trained models and TensorBoard logs (gitignored)
-paper/             Fig 1–3 (figs/) and Table 1 (table1.md, table1.tex), written by rl/09_paper_figures.py
-matlab/lab08a/     Simscape Multibody + Fluids boom model, figures, parameter export (export/boom_params_lab08a.json)
-matlab/lab09b2/    Simscape energy runs (plain and damped), exported to export/simscape_*.csv
-ml/                early fault detection experiments (Isolation Forest, LSTM autoencoder)
-docs/              acceptable error rationale (20 cm), env vs DX300 parameter audit, payload estimator, real plant design, Lab 12 design, Lab 13 plan
-slides/            deck on SAC, the alternatives and the benchmark (dx300_sac_methods.pptx), with outline and sources
-tests/             pytest tests for the parameters and boom geometry
-```
-
-## Setup and reproduction
-
-Run everything from the repo root.
-
-```bash
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-pytest
-```
-
-Train (long runs; each 08b model takes about 12 min on the author's machine, see [rl/08b_train_log.csv](rl/08b_train_log.csv)):
-
-```bash
-python rl/04_knee_sweep.py        # 10 weights x 3 seeds, 20k steps
-python rl/05_generalization.py    # w = 0, 0.1, 0.3, 0.5 x 3 seeds; saves the models used by 05b, 06, 06b
-python rl/08b_robust_train.py     # 18 models: plain and residual SAC x w = 0, 0.1, 0.3 x 3 seeds, 100k steps
-```
-
-Evaluate:
-
-```bash
-python rl/05b_extrapolation.py
-python rl/06_sensitivity.py
-python rl/06b_noise.py
-python rl/07_pid_baseline.py
-python rl/08b_eval.py --substeps 10     # writes rl/08b_eval_n10.csv
-python rl/08c_substep_check.py
-python rl/08d_eval_simscape_J.py
-```
-
-Regenerate the paper figures and Table 1 (reads `rl/08b_eval_n10.csv`; Fig 3 needs the 08b models):
-
-```bash
-python rl/09_paper_figures.py
-```
-
-Simscape model (MATLAB):
-
-```bash
-matlab -batch "cd('matlab/lab08a'); stage4_run"
-```
-
-## Labs
+### Labs
 
 Labs 03–09f are Stage 1 on the placeholder plant (`boom_env.py`, `boom_env_robust.py`); Labs 10–13 move to the real plant (`boom_env_real.py`, `boom_env_real_robust.py`). Unless noted: 3 seeds (0, 1, 2), 100 unseen scenarios (`new100`), "misses" = share of moves with tip error over 20 cm, energy = mean mechanical work per move. Tip error = 6.245 m × angle error (1° ≈ 10.9 cm).
+
+<details>
+<summary>Results per lab (Labs 03–13)</summary>
 
 | Lab | What | Key result |
 |---|---|---|
@@ -113,6 +61,8 @@ Labs 03–09f are Stage 1 on the placeholder plant (`boom_env.py`, `boom_env_rob
 | 12h | Longer training: residual SAC, w = 0.03, 3 seeds, 300k steps (3× Lab 12), evaluated every 50k | No gain from longer training: 100k → 300k gives misses 1.31 → 1.50 %, mean error 5.8 → 6.6 cm, E_mech 191.4 → 191.5 kJ; checkpoints at 150–250k are worse and vary more between seeds. No checkpoint beats the PID (0 %, 159.1 kJ) ([rl/12h_long.md](rl/12h_long.md), [figure](rl/12h_long.png)). |
 | 13 | Benchmark of other learning methods in the setup of the best Lab 12 SAC (residual on `balanced`, w = 0.03, 3 seeds, Lab 12e protocol). Online: TD3 and PPO (SB3, 100k steps; PPO also at 1M, not equal budget). Offline: BC, CQL and IQL (d3rlpy, 100k gradient steps) on 1M transitions from the `balanced` and `economical` PID with noise 0.1 on the command | No method beats the `economical` PID (0 % misses, 159.1 kJ). Offline: BC 0.00 % misses at 162.6 kJ (closest), IQL 0.02 % at 164.1 kJ, CQL 10.9 % at 190.8 kJ. Online: SAC 1.01 % at 191.5 kJ, TD3 25.9 % at 184.3 kJ, PPO 24.3 % at 318.6 kJ (7.4 % at 216.2 kJ with 1M steps). BC error falls with the dataset size (mean 3.5 → 2.8 → 2.2 cm at 100k → 300k → 1M transitions); IQL shows no trend (2.4, 2.1, 2.4 cm). The online learners move the valve command 4–32× more than the PID, and 55–70 % of their energy above the floor is oscillation ([rl/13_benchmark.md](rl/13_benchmark.md); plan: [docs/13_benchmark.md](docs/13_benchmark.md)). |
 
+</details>
+
 ### Table 1
 
 Controllers from 08b and the 07 PIDs, 10 substeps ([rl/08b_eval_n10.csv](rl/08b_eval_n10.csv)). The first five columns use the nominal model on `new100`.
@@ -137,6 +87,108 @@ Seeds: mean of means, worst of maxima, mean of shares.
 ![Fig 2: robustness per variant](paper/figs/fig2_robustness_bars.png)
 
 *Fig 2: share of moves over 20 cm per variant on `new100`.*
+
+## Repository structure
+
+```
+dx300-sim/
+├── dx300sim/            DX300 parameters (dx300_params.py: boom length 6.245 m, pins, end stops) and boom geometry
+├── rl/                  RL code and results
+│   ├── boom_env*.py       boom envs: placeholder plant (labs 02–09), real plant from the Lab 08a Simscape export (labs 10–13)
+│   ├── 0N_*.py            numbered lab scripts, with their CSV / PNG / log results next to them
+│   └── models/, tb/       trained models and TensorBoard logs (gitignored)
+├── paper/               paper sources (main.tex, sec*.tex, refs.bib) and Table 1 (table1.md, table1.tex)
+│   └── figs/              Fig 1–3 written by rl/09_paper_figures.py; lab13/ written by rl/13_figures.py
+├── matlab/
+│   ├── lab08a/            Simscape Multibody + Fluids boom model, figures, parameter export (export/boom_params_lab08a.json)
+│   └── lab09b2/           Simscape energy runs (plain and damped), exported to export/simscape_*.csv
+├── ml/                  early fault detection experiments (Isolation Forest, LSTM autoencoder)
+├── docs/                acceptable error rationale (20 cm), env vs DX300 parameter audit, payload estimator, real plant design, Lab 12 design, Lab 13 plan
+├── slides/              deck on SAC, the alternatives and the benchmark (dx300_sac_methods.pptx), with outline and sources
+├── tests/               pytest tests for the parameters and boom geometry
+├── requirements.txt     pinned Python dependencies
+├── pyproject.toml       pytest, black and ruff settings
+├── CITATION.cff
+└── LICENSE
+```
+
+## Install
+
+Run everything from the repo root.
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+pytest
+```
+
+The Lab 13 offline learners (BC, CQL, IQL) run in a separate environment, `.venv-d3rlpy`, with d3rlpy 2.8.1 ([docs/13_benchmark.md](docs/13_benchmark.md)). [TODO: requirements file for `.venv-d3rlpy`]
+
+## Usage
+
+Trained models (`rl/models/`) and TensorBoard logs (`rl/tb/`) are not in the repo. Evaluation scripts need the models from the training scripts; the report and figure commands below read result files that are in the repo.
+
+### Real plant (Labs 10–13)
+
+Reports and figures from the committed result files:
+
+```bash
+python rl/11_report.py
+python rl/12_eval.py --report      # report only, from rl/12_eval.csv
+python rl/13_figures.py            # paper/figs/lab13/fig1..fig5, including the figure at the top
+```
+
+Train (long runs):
+
+```bash
+python rl/12_robust_train.py --config residual --w 0.1 --seed 0
+python rl/13_online_train.py --algo td3 --seed 0
+python rl/13_online_train.py --algo ppo --seed 0
+python rl/13_dataset.py                                                        # about 2 min on 16 cores
+.venv-d3rlpy/bin/python rl/13_offline_train.py --algo cql --size 1M --seed 0
+```
+
+Evaluate (needs the trained models):
+
+```bash
+python rl/12_eval.py     # checks, evaluation, report
+python rl/13_eval.py     # checks, evaluation (about 1 h on 16 cores), report
+```
+
+### Stage 1, placeholder plant (Labs 03–09)
+
+Train (long runs; each 08b model takes about 12 min on the author's machine, see [rl/08b_train_log.csv](rl/08b_train_log.csv)):
+
+```bash
+python rl/04_knee_sweep.py        # 10 weights x 3 seeds, 20k steps
+python rl/05_generalization.py    # w = 0, 0.1, 0.3, 0.5 x 3 seeds; saves the models used by 05b, 06, 06b
+python rl/08b_robust_train.py     # 18 models: plain and residual SAC x w = 0, 0.1, 0.3 x 3 seeds, 100k steps
+```
+
+Evaluate:
+
+```bash
+python rl/05b_extrapolation.py
+python rl/06_sensitivity.py
+python rl/06b_noise.py
+python rl/07_pid_baseline.py
+python rl/08b_eval.py --substeps 10     # writes rl/08b_eval_n10.csv
+python rl/08c_substep_check.py
+python rl/08d_eval_simscape_J.py
+```
+
+Regenerate the paper figures and Table 1 (reads `rl/08b_eval_n10.csv`; Fig 3 needs the 08b models):
+
+```bash
+python rl/09_paper_figures.py
+```
+
+### Simscape model (MATLAB)
+
+```bash
+matlab -batch "cd('matlab/lab08a'); stage4_run"
+```
 
 ## Method
 
