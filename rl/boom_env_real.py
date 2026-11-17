@@ -13,6 +13,7 @@ Plant, per substep of h = dt / SUBSTEPS (semi-implicit Euler, command held):
               tau_cyl = J (om_new - om_old) / h + tau_g + tau_f, else tau_cyl = tau_cmd.
   end stops: th clipped, om = 0 (as BoomEnv).
 Energy uses the delivered torque tau_cyl: energy_J = sum |tau_cyl om| h.
+Direction split of the same term: E_up_J sums it where om > 0, E_down_J where om < 0.
 
 Everything is read from matlab/lab08a/export/boom_params_lab08a.json except the cylinder bore,
 rod and count (dx300sim/dx300_params.py, OFFICIAL; not in the JSON).
@@ -187,6 +188,7 @@ class BoomEnvReal(gym.Env):
         self.om, self.k, self.energy_J = 0.0, 0, 0.0
         self.m_tip = self.m_tip0
         self.W_pos_J = self.W_neg_J = self.vol_m3 = self.fric_J = self.stop_J = 0.0
+        self.E_up_J = self.E_down_J = 0.0
         self.n_sub = self.n_flow = self.n_torque = self.n_violation = 0
         return self._obs(), {}
 
@@ -233,6 +235,10 @@ class BoomEnvReal(gym.Env):
                 om_new = 0.0
             power = tau_cyl * om_new                              # delivered mechanical power
             self.energy_J += abs(power) * h
+            if om_new > 0.0:                                      # boom up
+                self.E_up_J += abs(power) * h
+            elif om_new < 0.0:                                    # boom down (om = 0: power = 0)
+                self.E_down_J += abs(power) * h
             if power >= 0.0:
                 self.W_pos_J += power * h
             else:
