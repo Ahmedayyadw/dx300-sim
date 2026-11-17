@@ -84,6 +84,39 @@ All real-plant numbers are model outputs (ESTIMATED), as their source files stat
 | 7 figure | Fig. 2 | Energy above the floor, grouped bars | `paper/figs/lab13/fig2_gap_to_floor.png` (reused) |
 | 8 figure | Fig. 4 | Command activity against oscillation energy | `paper/figs/lab13/fig4_smoothness_vs_oscillation.png` (reused) |
 | 11 figure | Fig. 5 | Reward return against energy above the floor | `paper/figs/lab13/fig5_reward_mismatch.png` (reused) |
+| 11 box, notes | "under either reward"; "SAC and TD3 exploited the corrected one" | Question (a), framing after Lab 14 | `rl/14_reward_fix.md`, Statement |
+| 11 box, notes | hard accuracy constraint, "cannot be paid for by missing" | Question (b), Lab 15 constrained RL or future work: the case Lab 14 lists as not tested | `rl/14_reward_fix.md`, Statement, last bullet |
+| 12 pill | 100 unseen scenarios × 72 rows | Lab 13 protocol used by Lab 14 | `rl/14_reward_fix.md`, header |
+| 12 table | 0.00 / 2.1 / 159.1 / −4.699 | Economical PID: misses over 20 cm %, mean error cm, E_mech kJ, corrected return | `rl/14_reward_fix.md`, 14e table and "Return on the training objective" table |
+| 12 table | 48.06 / 43.0 / 136.0 / −4.339 | SAC 100k, corrected reward | same two tables |
+| 12 table | 48.75 / 40.6 / 134.8 / −4.213 | TD3 100k, corrected reward | same two tables |
+| 12 table | 0.47 / 3.1 / 159.1 / −4.632 | IQL 1M, corrected reward | same two tables |
+| 12 table | 10.62 / 8.8 / 150.5 / −4.584 | CQL 1M, corrected reward | same two tables |
+| 12 table | 0.09 / 4.4 / 157.6 / −4.724 | BC, economical-PID data only (500k) | same two tables |
+| 12 footnote | 20 tuning scenarios × 4 variants, no noise; 3 seeds | Where the return column is measured | `rl/14_reward_fix.md`, "Return on the training objective" |
+| 12 bullet | 48 % misses | SAC 48.06 %, TD3 48.75 %, rounded | `rl/14_reward_fix.md`, 14e table |
+| 12 box | 0.021 rad/s; 0.01 rad/s | Mean abs(omega) over the last 2 s of SAC and TD3; stall speed of the reward | `rl/14_reward_fix.md`, "Why SAC and TD3 score higher…" bullet 2 |
+| 12 box | 79 % and 80 %; 37 %; 5 cm | Steps outside the tolerance while moving: SAC, TD3, economical PID; tolerance | same bullet (table: 78.9, 80.3, 36.9) |
+| 12 box | +1.035; 0.271; 0.403 | SAC against the economical PID: gain on the energy term, loss on tracking and on the stall term | same section, bullet 1 |
+| 12 notes | r = −(e² + 0.01 ω² + 20 P/P_REF + 17.5 h)/50; h; 0.7 %; 42 % | Corrected reward, stall term, margin and share of episodes in order | `rl/14_reward_fix.md`, 14a |
+| 12 notes | 100,000 steps; 1M dataset; 500k transitions | Lab 14 budgets | `rl/14_reward_fix.md`, Setup |
+| 12 notes | −1.5 kJ | BC on economical-PID data against the economical PID, E_mech | `rl/14_reward_fix.md`, Statement |
+| 12 notes | 30.2 to 52.8 % | Misses of the learning-rate check (x0.3, x3, 1 seed) | `rl/14_reward_fix.md`, Statement |
+| 13 pill | 7200 moves per run | Lab 12e protocol | `rl/13e_direction_split.md`, header |
+| 13 chart labels | 45.06 / 46.70 / 47.64 / 47.14 / 45.42 / 45.52 / 46.74 / 48.28 / 47.76 / 48.62 % | Boom-down (lowering) share of E_mech: economical PID, balanced PID, SAC w=0.03 and w=0.1 (balanced base), BC 1M, IQL 1M, CQL 1M, TD3 100k, PPO 100k, PPO 1M | `rl/13e_direction_split.md`, "Per controller", boom-down % column |
+| 13 chart bars | E_down and E_up per move, kJ | Mean over seeds of the total per run divided by 7200 moves (derived; equals the md totals / 7200) | `rl/13e_direction_split.csv` (`E_down_kJ`, `E_up_kJ`, `moves`) |
+| 13 stat | 45.06–48.62 % | Lowering share, lowest (economical PID) to highest (PPO 1M), 16 controllers | `rl/13e_direction_split.md`, Spread |
+| 13 stat | 42.67–45.41 % | W_neg (negative work) share, lowest (PPO 100k) to highest (TD3 100k) | `rl/13e_direction_split.md`, Spread |
+| 13 stat | 3.56 pp | Spread of the lowering share between controllers | `rl/13e_direction_split.md`, Spread |
+| 13 text, notes | 159.1 to 318.6 kJ | E_mech per move across controllers | `rl/13e_direction_split.md`, Spread |
+| 13 notes | 2.74 pp; 1.78 pp; 352,800 moves, 0.0 kJ | W_neg spread; widest seed range (TD3 100k); validation against the published per-move files | `rl/13e_direction_split.md`, Spread and Checks |
+
+The title "~45 % braking work" rounds the W_neg share (42.67–45.41 %). Lowering share and negative work are two separate
+splits in `rl/13e_direction_split.md`; the negative work done while lowering (their overlap) was not logged, so the
+slide quotes no number for it.
+
+Slides 12 (Lab 14) and 13 (energy split) were added and the slide 11 questions updated on 2026-11-17; References moved
+to slide 14.
 
 Slides 6, 7, 8 and 11 were rewritten on 2026-11-15 with the Lab 13 results. Slides 5, 9 and 10 were brought in line
 with what Lab 13 did on the same day. Every number in their text
@@ -140,5 +173,5 @@ Numbers from published papers (slide 9 and notes) are listed with their referenc
 
 ## [uncertain] — not cited on any slide
 
-- Egli, Hutter, "Towards RL-Based Hydraulic Excavator Automation", IROS 2020, and "A General Approach for the Automation of Hydraulic Excavator Arms Using Reinforcement Learning", IEEE RA-L 7(2):5679–5686, 2022. Found in search results only; the ETH, dblp and PDF pages could not be opened, so no DOI or numbers were verified. Mentioned by name only in the slide 9 and 12 speaker notes, marked [uncertain].
+- Egli, Hutter, "Towards RL-Based Hydraulic Excavator Automation", IROS 2020, and "A General Approach for the Automation of Hydraulic Excavator Arms Using Reinforcement Learning", IEEE RA-L 7(2):5679–5686, 2022. Found in search results only; the ETH, dblp and PDF pages could not be opened, so no DOI or numbers were verified. Mentioned by name only in the slide 9 and 14 speaker notes, marked [uncertain].
 - MPC is named on slide 7 only as a method that was not tested; no citation.
