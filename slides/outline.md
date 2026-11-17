@@ -1,7 +1,8 @@
 # DX300 boom: SAC, alternatives and a benchmark — outline
 
-12 slides, 16:9. Slides 6–8 and 11 hold the measured Lab 13 results (updated 2026-11-15); before that,
+14 slides, 16:9. Slides 6–8 and 11 hold the measured Lab 13 results (updated 2026-11-15); before that,
 slides 6–8 were expectations from the literature. Slides 5, 9 and 10 were brought in line with what Lab 13 did.
+Slide 12 (Lab 14) and slide 13 (energy split, Lab 13e) were added on 2026-11-17, with new questions on slide 11.
 Every number has its source in `slides/sources.md`.
 
 ## 1. Problem: hold the boom on target with less energy
@@ -116,11 +117,37 @@ named on slide 7 and in its speaker notes.)
 - So no learner is pushed toward the economical PID
 - Reward kept as in Lab 12, so the setup stays identical
 - Box, questions for Dr. Sina:
-  - (a) Is this framing right for the paper?
-  - (b) Should I test a corrected reward (Lab 14) before submission?
+  - (a) Framing: no learner beats the economical PID under either reward (slide 12). Right for the paper?
+  - (b) Lab 15: constrained RL with a hard accuracy constraint before submission, or future work?
 
 (The Lab 12 gain-scheduler design of the earlier slide 11 is removed from the deck; it is in
 `docs/12_sac_real_plant.md`.)
 
-## 12. References
+## 12. Lab 14: a corrected reward does not close the gap — "Measured in Lab 14 · 100 unseen scenarios × 72 rows"
+| Controller | Reward | Miss > 20 cm % | Mean error cm | E_mech kJ | Return, corrected * |
+|---|---|---:|---:|---:|---:|
+| Economical PID | – | 0.00 | 2.1 | 159.1 | −4.699 |
+| SAC 100k | corrected | 48.06 | 43.0 | 136.0 | −4.339 |
+| TD3 100k | corrected | 48.75 | 40.6 | 134.8 | −4.213 |
+| IQL 1M | corrected | 0.47 | 3.1 | 159.1 | −4.632 |
+| CQL 1M | corrected | 10.62 | 8.8 | 150.5 | −4.584 |
+| BC, economical-PID data only | none (BC) | 0.09 | 4.4 | 157.6 | −4.724 |
+
+- No Lab 14 controller beats the economical PID
+- IQL reaches the PID energy, not its accuracy
+- SAC, TD3: higher return, yet 48 % misses
+- Box, how SAC and TD3 exploit the reward: boom still moving at the end (|ω| 0.021 rad/s, above the 0.01 rad/s
+  stall speed); outside the 5 cm tolerance while moving in 79 % and 80 % of steps (PID 37 %); SAC gains +1.035 on
+  energy, loses 0.271 on tracking and 0.403 on stall
+- Footnote: * mean return per episode, 20 tuning scenarios × 4 variants, no noise. Source: rl/14_reward_fix.md
+
+## 13. Energy split: ~45 % braking work in every controller — "Measured with the Lab 12e protocol · 7200 moves per run"
+- Chart (native, stacked bars): E_mech per move split into lowering (ω < 0) and raising (ω > 0) for 10 controllers;
+  label = lowering share (45.06 to 48.62 %)
+- Stat: 45.06–48.62 % of E_mech is spent lowering the boom, all 16 controllers
+- Stat: 42.67–45.41 % is negative (braking) work, W_neg
+- Stat: 3.56 pp, the largest difference between controllers in the lowering share
+- E_mech per move 159.1 to 318.6 kJ; the split barely moves. Source: rl/13e_direction_split.md
+
+## 14. References
 - [1]–[24], each with DOI or URL (see sources.md)
