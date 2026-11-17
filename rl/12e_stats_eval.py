@@ -14,6 +14,8 @@ Usage (repo root, .venv active):
   python rl/12e_stats_eval.py            evaluate (about 20-25 min on 16 cores) + report
   python rl/12e_stats_eval.py --report   report only, from rl/12e_moves.csv.gz
   python rl/12e_stats_eval.py --smoke    4 rows with residual 0, no models needed
+  python rl/12e_stats_eval.py --dir      evaluate with the direction split, write only
+                                         rl/12e_moves_dir.csv.gz (no report, other files untouched)
 Writes rl/12e_moves.csv.gz and rl/12e_stats.md.
 """
 
@@ -21,6 +23,7 @@ import collections
 import csv
 import gzip
 import importlib.util
+import math
 import os
 import sys
 
@@ -56,6 +59,21 @@ FIELDS = (
     "floor_kJ",
     "t_reach_s",
 )
+DIR = "--dir" in sys.argv  # spawn workers get the parent's sys.argv
+MOVES_DIR = "rl/12e_moves_dir.csv.gz"
+DIR_FIELDS = ("E_up_kJ", "E_down_kJ", "W_pos_kJ", "W_neg_kJ")
+
+
+def dir_kJ(env, r):
+    """E_mech split by direction (om > 0 up, om < 0 down) and by power sign, in kJ, for the move
+    L11.rollout just ran on env (read before the next rollout resets env)."""
+    e = r["E_mech_kJ"]
+    d = {"E_up_kJ": env.E_up_J / 1e3, "E_down_kJ": env.E_down_J / 1e3,
+         "W_pos_kJ": env.W_pos_J / 1e3, "W_neg_kJ": env.W_neg_J / 1e3}
+    assert d["W_pos_kJ"] == r["W_pos_kJ"], (d, r["W_pos_kJ"])  # env not reset since rollout
+    assert math.isclose(d["E_up_kJ"] + d["E_down_kJ"], e, rel_tol=1e-9, abs_tol=1e-9), (d, e)
+    assert math.isclose(d["W_pos_kJ"] + d["W_neg_kJ"], e, rel_tol=1e-9, abs_tol=1e-9), (d, e)
+    return d
 
 
 def model_path(label, seed):
@@ -92,6 +110,8 @@ def run_row(job):
                 "t_reach_s": r["t_reach_s"],
             }
         )
+        if DIR:
+            out[-1].update(dir_kJ(env, r))
     return out
 
 
@@ -102,9 +122,9 @@ def jobs(set_name=M.SET):
     return out
 
 
-def write_moves(rows):
-    with gzip.open(MOVES, "wt", newline="") as f:
-        w = csv.DictWriter(f, fieldnames=FIELDS)
+def write_moves(rows, path=MOVES, fields=FIELDS):
+    with gzip.open(path, "wt", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=fields)
         w.writeheader()
         w.writerows(rows)
 
@@ -268,6 +288,10 @@ def main():
     if missing:
         sys.exit("missing models (train them first):\n  " + "\n  ".join(missing))
     rows = [m for chunk in M.pool_map(run_row, jobs()) for m in chunk]
+    if DIR:
+        write_moves(rows, MOVES_DIR, FIELDS + DIR_FIELDS)
+        print(f"wrote {MOVES_DIR} ({len(rows)} moves)")
+        return
     write_moves(rows)
     report(read_moves())
 

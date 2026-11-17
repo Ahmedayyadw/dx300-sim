@@ -28,6 +28,8 @@ Usage (repo root, .venv active):
   python rl/13_eval.py --check    checks only
   python rl/13_eval.py --smoke    *_smoke models, 2 rows of the tuning scenarios, files under
                                   rl/models/13_smoke_* (gitignored). No unseen scenario is used.
+  python rl/13_eval.py --dir      checks, evaluation with the direction split; writes only
+                                  rl/13_moves_dir.csv.gz (no report, other files untouched)
 Writes rl/13_moves.csv.gz, rl/13_benchmark.csv, rl/13_benchmark.md.
 """
 
@@ -57,6 +59,8 @@ SEEDS = (0,) if SMOKE else C.SEEDS
 MOVES = f"{C.MODEL_DIR}/13_smoke_moves.csv.gz" if SMOKE else "rl/13_moves.csv.gz"
 CSV_PATH = f"{C.MODEL_DIR}/13_smoke_benchmark.csv" if SMOKE else "rl/13_benchmark.csv"
 MD_PATH = f"{C.MODEL_DIR}/13_smoke_benchmark.md" if SMOKE else "rl/13_benchmark.md"
+DIR = "--dir" in sys.argv  # direction split of E_mech, see S.dir_kJ
+MOVES_DIR = f"{C.MODEL_DIR}/13_smoke_moves_dir.csv.gz" if SMOKE else "rl/13_moves_dir.csv.gz"
 DATA_CSV = "rl/13_dataset.csv"
 REF, SAC12 = "economical", "res_bal_w0.03"
 REROLL = ("economical", "balanced", SAC12)  # 13d only
@@ -126,6 +130,8 @@ def run_row(job):
                     "du_dt": ctrl.du / max(1, ctrl.n_du) / ctrl.dt,
                     "overshoot_kJ": r["overshoot_kJ"], "oscillation_kJ": r["oscillation_kJ"],
                     "direct_excess_kJ": r["direct_excess_kJ"]})
+        if DIR:
+            out[-1].update(S.dir_kJ(env, r))
     return out
 
 
@@ -538,6 +544,13 @@ def main():
     js = jobs()
     rows = [m for chunk in M.pool_map(run_row, js) for m in chunk]
     log(f"evaluation: {len(js)} rows, {len(rows)} moves in {time.time() - t0:.0f} s")
+    if DIR:
+        with gzip.open(MOVES_DIR, "wt", newline="") as f:
+            wr = csv.DictWriter(f, fieldnames=FIELDS + S.DIR_FIELDS)
+            wr.writeheader()
+            wr.writerows(rows)
+        print(f"wrote {MOVES_DIR} ({len(rows)} moves)")
+        return
     with gzip.open(MOVES, "wt", newline="") as f:
         wr = csv.DictWriter(f, fieldnames=FIELDS)
         wr.writeheader()
