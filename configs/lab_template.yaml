@@ -1,0 +1,28 @@
+# Config for rl/00_lab_template.py. Copy this file for a new lab (configs/15_xxx.yaml).
+# Every value here is saved with the run (runs/<run_id>/config.json + runs/runs.csv),
+# so results can be traced back to the exact settings.
+# Override from the command line, e.g.:
+#   python rl/00_lab_template.py seed=1 train.steps=50000 env.w_energy=0.1
+#   python rl/00_lab_template.py -m seed=0,1,2          (multirun: one run per seed)
+
+name: lab_template
+seed: 0
+
+env:
+  w_energy: 0.05
+
+train:
+  algo: sac
+  steps: 2000          # smoke-test default; real runs set this on the command line
+  device: cpu
+
+eval:
+  n_scenarios: 20
+  scenario_seed: 123   # unseen scenarios use a different RNG seed than training
+
+hydra:
+  run:
+    dir: runs/hydra/${now:%Y%m%d-%H%M%S}_${name}
+  sweep:
+    dir: runs/hydra/${now:%Y%m%d-%H%M%S}_${name}_multirun
+    subdir: ${hydra.job.num}
