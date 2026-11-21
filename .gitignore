@@ -60,3 +60,8 @@ d3rlpy_logs/
 htmlcov/
 build/
 dist/
+
+# Run logs (dx300sim/runlog.py): per-run folders and Hydra/W&B output are local,
+# runs/runs.csv (one row per run: commit, seed, config, metrics) is committed.
+runs/*
+!runs/runs.csv
